@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surferado 5000 — Surf Forecast</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --bg: #0B1120; --bg2: #111827; --card: rgba(255,255,255,0.03); --card-hover: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.06); --border-hover: rgba(255,255,255,0.12);
+  --text: #F1F5F9; --text2: #94A3B8; --text3: #475569;
+  --blue: #3B82F6; --cyan: #06B6D4; --green: #10B981; --yellow: #F59E0B; --orange: #F97316; --red: #EF4444;
+  --r: 12px; --rs: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* Header */
+header { background:linear-gradient(180deg,rgba(15,23,42,0.95),var(--bg)); border-bottom:1px solid var(--border); backdrop-filter:blur(20px); position:sticky; top:0; z-index:100; }
+.header-inner { max-width:1400px; margin:0 auto; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.region-tabs { display:flex; gap:4px; background:rgba(255,255,255,0.04); border-radius:10px; padding:3px; }
+.region-tab { padding:8px 18px; border:none; background:transparent; color:var(--text2); font-family:inherit; font-size:0.85em; font-weight:600; border-radius:8px; cursor:pointer; transition:all 0.25s; white-space:nowrap; }
+.region-tab:hover { color:var(--text); background:rgba(255,255,255,0.04); }
+.region-tab.active { background:rgba(59,130,246,0.15); color:var(--blue); box-shadow:0 0 20px rgba(59,130,246,0.1); }
+.header-title { font-size:0.85em; color:var(--text2); font-weight:500; }
+.header-title b { color:var(--text); font-weight:700; }
+
+/* Container */
+.container { max-width:1400px; margin:0 auto; padding:16px 20px; }
+
+/* Toolbar */
+.toolbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+.tb-group { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.tb-btn { background:var(--card); border:1px solid var(--border); color:var(--text2); padding:6px 14px; border-radius:var(--rs); cursor:pointer; font-family:inherit; font-size:0.78em; font-weight:600; transition:all 0.25s; }
+.tb-btn:hover { background:var(--card-hover); color:var(--text); border-color:var(--border-hover); }
+.tb-btn.active { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); color:var(--blue); }
+.tb-btn:disabled { opacity:0.4; cursor:default; }
+.tb-label { font-size:0.72em; color:var(--text3); }
+.tb-select { background:var(--card); border:1px solid var(--border); color:var(--text2); padding:5px 10px; border-radius:var(--rs); font-family:inherit; font-size:0.75em; }
+
+/* Surf Now Card */
+.surf-now { background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(6,182,212,0.06)); border:1px solid rgba(16,185,129,0.2); border-radius:var(--r); padding:16px 20px; margin-bottom:14px; }
+.surf-now-inner { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.sn-badge { background:linear-gradient(135deg,var(--green),var(--cyan)); color:#0B1120; padding:6px 14px; border-radius:var(--rs); font-weight:800; font-size:0.9em; white-space:nowrap; }
+.sn-detail { flex:1; min-width:200px; }
+.sn-spot { font-size:1.1em; font-weight:800; }
+.sn-info { font-size:0.8em; color:var(--text2); margin-top:4px; line-height:1.6; }
+.sn-nav { display:inline-block; background:var(--green); color:#0B1120; padding:8px 18px; border-radius:var(--rs); font-weight:700; text-decoration:none; font-size:0.82em; transition:all 0.25s; }
+.sn-nav:hover { filter:brightness(1.15); transform:translateY(-1px); }
+
+/* Weather Cards */
+.weather-bar { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; scrollbar-width:thin; scrollbar-color:var(--text3) transparent; }
+.weather-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:10px 14px; text-align:center; min-width:130px; flex:1; cursor:pointer; transition:all 0.25s; }
+.weather-card:hover { background:var(--card-hover); border-color:var(--border-hover); }
+.weather-card.active { border-color:rgba(59,130,246,0.4); background:rgba(59,130,246,0.06); box-shadow:0 0 20px rgba(59,130,246,0.08); }
+.wc-day { font-weight:700; font-size:0.9em; }
+.wc-icon { font-size:1.6em; margin:4px 0; }
+.wc-temp { font-size:0.78em; color:var(--text2); }
+.wc-detail { font-size:0.68em; color:var(--text3); margin-top:2px; }
+.wc-sea { font-size:0.72em; color:var(--cyan); margin-top:3px; font-weight:600; }
+.wc-tide { font-size:0.68em; color:var(--blue); margin-top:2px; }
+
+/* Map */
+#map { height:380px; border-radius:var(--r); border:1px solid var(--border); margin-bottom:14px; }
+
+/* Legend */
+.legend { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; padding:8px; }
+.legend-item { display:flex; align-items:center; gap:4px; font-size:0.72em; color:var(--text2); }
+.legend-dot { width:8px; height:8px; border-radius:50%; }
+
+/* Day Selector */
+.day-selector { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; position:sticky; top:56px; z-index:90; background:var(--bg); padding:10px 0; border-bottom:1px solid var(--border); margin-bottom:14px; }
+.day-btn { padding:8px 16px; border:1px solid var(--border); background:var(--card); color:var(--text2); border-radius:var(--rs); cursor:pointer; font-family:inherit; font-size:0.85em; font-weight:600; transition:all 0.25s; }
+.day-btn:hover { background:var(--card-hover); color:var(--text); }
+.day-btn.active { background:rgba(59,130,246,0.12); color:var(--blue); border-color:rgba(59,130,246,0.3); }
+.day-btn .sub { display:block; font-size:0.7em; margin-top:2px; font-weight:500; color:var(--text3); }
+.day-btn.active .sub { color:var(--blue); opacity:0.7; }
+
+/* Overview */
+.overview { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:18px 20px; margin-bottom:14px; }
+.overview h2 { color:var(--blue); font-size:1em; margin-bottom:8px; }
+.overview p { line-height:1.7; color:var(--text2); font-size:0.88em; }
+.overview strong { color:var(--green); }
+
+/* Spot Cards */
+.spots-list { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+.spot-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); }
+.spot-card:hover { background:var(--card-hover); border-color:var(--border-hover); transform:translateY(-1px); box-shadow:0 8px 25px rgba(0,0,0,0.2); }
+.spot-card.rank-1 { border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.03); }
+.spot-card.rank-2 { border-color:rgba(59,130,246,0.2); background:rgba(59,130,246,0.02); }
+.spot-card.rank-3 { border-color:rgba(59,130,246,0.12); }
+
+.spot-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px; }
+.spot-rank { font-size:1.3em; font-weight:900; min-width:32px; }
+.spot-rank.r1 { color:var(--green); }
+.spot-rank.r2 { color:var(--blue); }
+.spot-rank.r3 { color:var(--cyan); }
+.spot-rank.rn { color:var(--text3); }
+.spot-name { font-size:1.05em; font-weight:700; }
+.spot-type { font-size:0.72em; color:var(--text3); margin-top:2px; }
+.tag { display:inline-block; padding:1px 7px; border-radius:4px; font-size:0.68em; font-weight:600; margin-left:4px; }
+.tag-drive { background:rgba(255,255,255,0.04); border:1px solid var(--border); color:var(--text3); }
+.tag-dist { background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.2); color:#a78bfa; }
+.tag-sea { background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.2); color:var(--cyan); }
+.tag-tide { background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.2); color:var(--blue); font-size:0.65em; }
+
+/* Sessions */
+.sessions { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+@media (max-width:700px) { .sessions { grid-template-columns:1fr; } }
+.session { background:rgba(0,0,0,0.2); border-radius:var(--rs); padding:10px 12px; }
+.session-label { font-size:0.72em; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+
+/* Score */
+.score-pill { font-size:0.72em; padding:3px 10px; border-radius:20px; font-weight:700; letter-spacing:0.3px; }
+.score-5 { background:rgba(16,185,129,0.15); color:var(--green); }
+.score-4 { background:rgba(59,130,246,0.15); color:var(--blue); }
+.score-3 { background:rgba(245,158,11,0.15); color:var(--yellow); }
+.score-2 { background:rgba(249,115,22,0.15); color:var(--orange); }
+.score-1 { background:rgba(239,68,68,0.12); color:var(--red); }
+
+.sg-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; }
+.sg-item { font-size:0.8em; }
+.sg-label { font-size:0.6em; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+.sg-val { font-weight:600; font-size:0.9em; }
+
+/* Wind badges */
+.wind-dir { display:inline-block; font-size:0.68em; padding:2px 6px; border-radius:4px; font-weight:700; }
+.wind-offshore { background:rgba(16,185,129,0.15); color:var(--green); }
+.wind-cross { background:rgba(245,158,11,0.15); color:var(--yellow); }
+.wind-onshore { background:rgba(239,68,68,0.12); color:var(--red); }
+.wind-light { background:rgba(6,182,212,0.12); color:var(--cyan); }
+
+.note { font-size:0.78em; color:var(--text2); margin-top:8px; line-height:1.5; }
+.sources { margin-top:6px; font-size:0.68em; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.sources a { color:var(--text3); text-decoration:none; transition:color 0.2s; }
+.sources a:hover { color:var(--blue); }
+.no-surfline { color:var(--orange); font-style:italic; font-size:0.95em; }
+.nav-link { background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.2); border-radius:4px; padding:1px 7px; color:var(--blue); text-decoration:none; font-size:1em; transition:all 0.2s; }
+.nav-link:hover { background:rgba(59,130,246,0.2); }
+
+/* Conditions */
+.day-conditions { text-align:center; color:var(--text2); margin-bottom:14px; font-size:0.88em; max-width:960px; margin-left:auto; margin-right:auto; line-height:1.6; }
+
+/* Toast */
+.toast { position:fixed; top:80px; right:20px; background:var(--bg2); border:1px solid var(--border-hover); border-radius:var(--r); padding:16px 18px; z-index:200; max-width:380px; font-size:0.82em; box-shadow:0 20px 50px rgba(0,0,0,0.5); animation:toastIn 0.35s cubic-bezier(0.4,0,0.2,1); }
+.toast h4 { color:var(--blue); margin-bottom:8px; font-size:0.95em; }
+.toast-item { margin:4px 0; padding:5px 8px; background:rgba(0,0,0,0.3); border-radius:6px; color:var(--text2); }
+.toast-item b { color:var(--text); }
+.toast-close { position:absolute; top:8px; right:12px; color:var(--text3); cursor:pointer; font-size:1.1em; background:none; border:none; }
+@keyframes toastIn { from { transform:translateX(120%) scale(0.95); opacity:0; } to { transform:translateX(0) scale(1); opacity:1; } }
+
+/* Footer */
+.footer { text-align:center; color:var(--text3); font-size:0.72em; padding:20px; line-height:1.8; border-top:1px solid var(--border); max-width:1400px; margin:0 auto; }
+.footer a { color:var(--text3); text-decoration:none; }
+.footer a:hover { color:var(--blue); }
+
+/* Responsive */
+@media (max-width:640px) {
+  .header-inner { padding:10px 14px; }
+  .container { padding:12px 14px; }
+  .region-tab { padding:6px 12px; font-size:0.78em; }
+  #map { height:280px; }
+  .weather-card { min-width:110px; padding:8px 10px; }
+  .spot-card { padding:12px 14px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="region-tabs">
+      <button class="region-tab active" data-region="gardenRoute" onclick="switchRegion('gardenRoute')">🌊 Garden Route</button>
+      <button class="region-tab" data-region="capeTown" onclick="switchRegion('capeTown')">🏔️ Cape Town</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px"><span style="font-size:1.1em;font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent">🏄 Surferado 5000</span><div class="header-title" id="header-title"><b>Mossel Bay → J-Bay</b> · Mar 18–21</div></div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="toolbar">
+    <div class="tb-group">
+      <button class="tb-btn" id="refresh-btn" onclick="refreshWind()">🔄 Refresh</button>
+      <span class="tb-label" id="last-updated"></span>
+    </div>
+    <div class="tb-group">
+      <button class="tb-btn" id="loc-btn" onclick="getLocation()">📍 GPS</button>
+      <select class="tb-select" id="loc-select" onchange="handleLocSelect(this.value)"></select>
+      <button class="tb-btn" id="sort-toggle" onclick="toggleSort()">Sort: Score ⭐</button>
+    </div>
+  </div>
+
+  <div id="surf-now"></div>
+  <div class="weather-bar" id="weather-bar"></div>
+  <div id="map"></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> 5/5 Epic</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 4/5 Good</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> 3/5 Fair</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> 2/5 Marginal</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> 1/5 Skip</div>
+    <div class="legend-item"><span class="wind-dir wind-offshore">OFFSHORE</span></div>
+    <div class="legend-item"><span class="wind-dir wind-light">CALM</span></div>
+    <div class="legend-item"><span class="wind-dir wind-cross">CROSS</span></div>
+    <div class="legend-item"><span class="wind-dir wind-onshore">ONSHORE</span></div>
+  </div>
+
+  <div id="overview"></div>
+  <div class="day-selector" id="day-selector"></div>
+  <div id="spots-container"></div>
+</div>
+
+<div class="footer" id="footer"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA: GARDEN ROUTE
+// ═══════════════════════════════════════════════════════════
+const GR = {
+  title: '<b>Mossel Bay → J-Bay</b> · Mar 18–21',
+  mapCenter: [-34.08, 23.5], mapZoom: 8,
+  locPresets: {
+    wilderness: { lat:-33.994, lng:22.578, name:"Wilderness" },
+    mosselBay: { lat:-34.172, lng:22.154, name:"Mossel Bay" },
+    vicBay: { lat:-34.005, lng:22.549, name:"Victoria Bay" },
+    knysna: { lat:-34.036, lng:23.048, name:"Knysna" },
+    plett: { lat:-34.053, lng:23.372, name:"Plettenberg Bay" },
+    jbay: { lat:-34.049, lng:24.926, name:"Jeffreys Bay" }
+  },
+  homeLoc: 'wilderness',
+  weather: [
+    { day:"Wed 18", icon:"⛈️", temp:"22-24°C", desc:"Thunderstorms", sea:"22°C", detail:"⚠️ 7-15mm rain", tide:"▲11:02 (1.9m) · ▼17:18" },
+    { day:"Thu 19", icon:"🌦️", temp:"22-33°C", desc:"Light rain", sea:"21-22°C", detail:"J-Bay 33°C!", tide:"▼05:35 · ▲11:48 (1.8m)" },
+    { day:"Fri 20", icon:"☁️", temp:"18-26°C", desc:"Cloudy", sea:"21°C", detail:"All dry", tide:"▲00:18 · ▼06:25 · ▲12:38" },
+    { day:"Sat 21", icon:"☀️", temp:"15-23°C", desc:"Clear! ⭐", sea:"21°C", detail:"UV 7+ Sunscreen!", tide:"▲01:10 · ▼07:20 · ▲13:35" }
+  ],
+  overview: `<strong>Today PM (Wed 18):</strong> ⛈️ Thunderstorms. Buffels Bay best (3/5). Mossel Bay onshore—skip.<br>
+<strong>⭐ Thu 19 dawn:</strong> THE session! Buffels Bay 2.1m GLASS (1.4 kph!). Vic Bay 1.96m. J-Bay HOT 33°C.<br>
+<strong>⚠️ Fri 20:</strong> Strong wind. Buffels Bay 2.5 kph dawn = only calm spot. J-Bay 20 kph W (44g!).<br>
+<strong>⭐⭐ Sat 21 = BEST DAY!</strong> ☀️ Clear! Vic Bay 2.06m + NW offshore. Buffels 2.22m biggest. <strong>Mossel Bay 1.9m + W offshore = EPIC!</strong>`,
+  days: [
+    { key:'today_pm', label:'Today PM', sub:'Wed 18 ⛈️' },
+    { key:'thu', label:'Thu 19', sub:'⭐ Best dawn' },
+    { key:'fri', label:'Fri 20', sub:'⚠️ Windy' },
+    { key:'sat', label:'Sat 21', sub:'⭐ BEST DAY!' }
+  ],
+  tideData: {
+    today_pm: [{time:"04:48",height:0.3,type:"L"},{time:"11:02",height:1.9,type:"H"},{time:"17:18",height:0.4,type:"L"},{time:"23:32",height:1.8,type:"H"}],
+    thu: [{time:"05:35",height:0.4,type:"L"},{time:"11:48",height:1.8,type:"H"},{time:"18:04",height:0.5,type:"L"}],
+    fri: [{time:"00:18",height:1.7,type:"H"},{time:"06:25",height:0.5,type:"L"},{time:"12:38",height:1.7,type:"H"},{time:"18:55",height:0.5,type:"L"}],
+    sat: [{time:"01:10",height:1.6,type:"H"},{time:"07:20",height:0.5,type:"L"},{time:"13:35",height:1.6,type:"H"},{time:"19:50",height:0.6,type:"L"}]
+  },
+  tidePrefs: {
+    "Victoria Bay":"All tides · best mid→high","Buffels Bay":"All tides","Outer Pool":"Mid→high","Inner Pool":"Mid→high",
+    "Diaz Beach":"All tides","J-Bay (Supertubes)":"Low→mid incoming","Wilderness":"All tides · caution high",
+    "Seal Point":"Mid→high","Cape St. Francis":"Mid→high incoming","Goukamma":"All tides · best low→mid",
+    "Lookout Beach":"Low→mid","Keurbooms":"All tides","Swartvlei Beach":"All tides",
+    "The Wedge (Plett)":"All tides","Nature's Valley":"All tides · best mid","St. Francis Bay":"All tides"
+  },
+  spots: [
+    { name:"Diaz Beach", lat:-34.123, lng:22.123, type:"Beachbreak · Sand", offshore:"WNW", swell:"SE-S",
+      surfline:"https://www.surfline.com/surf-report/mossel-bay/584204204e65fad6a77094ad", seaTemp:"22°C" },
+    { name:"Inner Pool", lat:-34.166, lng:22.148, type:"Right reef · Rock shelves", offshore:"W", swell:"SSE-S",
+      surfline:"https://www.surfline.com/surf-report/inner-pool/584204204e65fad6a77094ab", seaTemp:"22°C" },
+    { name:"Outer Pool", lat:-34.172, lng:22.154, type:"Right reef · Rock shelves", offshore:"W", swell:"SSE-S",
+      surfline:"https://www.surfline.com/surf-report/outer-pool/584204204e65fad6a77094ac",
+      stormrider:"https://www.stormrider.surf/break/outer-pool", seaTemp:"22°C" },
+    { name:"Victoria Bay", lat:-34.005, lng:22.549, type:"Right pointbreak · Boulders & sand", offshore:"N/NW", swell:"S-SW",
+      surfline:"https://www.surfline.com/surf-report/victoria-bay/584204204e65fad6a77094ae",
+      stormrider:"https://www.stormrider.surf/break/victoria-bay", seaTemp:"22°C" },
+    { name:"Wilderness", lat:-33.994, lng:22.578, type:"Beachbreak · Sand", offshore:"N", swell:"S",
+      surfline:"https://www.surfline.com/surf-report/wilderness/584204204e65fad6a77094af",
+      stormrider:"https://www.stormrider.surf/break/wilderness-beach", seaTemp:"22°C" },
+    { name:"Swartvlei Beach", lat:-34.030, lng:22.752, type:"Beachbreak · Sand", offshore:"N", swell:"S",
+      surfline:"https://www.surfline.com/surf-report/swartvlei-beach/640a1c0ee920306433950986", seaTemp:"22°C" },
+    { name:"Goukamma", lat:-34.069, lng:22.948, type:"Rivermouth beachbreak · Sand", offshore:"N", swell:"S-SW",
+      stormrider:"https://www.stormrider.surf/break/goukamma", seaTemp:"22°C" },
+    { name:"Buffels Bay", lat:-34.079, lng:22.978, type:"Pointbreak · Boulders & sand", offshore:"NE", swell:"E-SW",
+      surfline:"https://www.surfline.com/surf-report/buffels-bay/584204204e65fad6a77094b0",
+      stormrider:"https://www.stormrider.surf/break/buffalo-point",
+      windyApp:"https://windy.app/forecast2/spot/4011939/Buffels+Bay", seaTemp:"22°C" },
+    { name:"Lookout Beach", lat:-34.076, lng:23.372, type:"Rivermouth beachbreak · Sand", offshore:"N-NW", swell:"S-SW",
+      surfline:"https://www.surfline.com/surf-report/lookout-beach/640a1c02b6d7696598485f9a",
+      stormrider:"https://www.stormrider.surf/break/lookout-beach", seaTemp:"22°C" },
+    { name:"The Wedge (Plett)", lat:-34.053, lng:23.372, type:"Beachbreak · Sand", offshore:"N-NW", swell:"S-SW",
+      surfline:"https://www.surfline.com/surf-report/the-wedge/640a1bfab6d769e2d5485d79", seaTemp:"22°C" },
+    { name:"Keurbooms", lat:-34.015, lng:23.410, type:"Beachbreak · Sand", offshore:"NW", swell:"E-SW",
+      surfline:"https://www.surfline.com/surf-report/keurboomstrand/640a1bfc451905224193d743",
+      stormrider:"https://www.stormrider.surf/break/keurbooms", seaTemp:"22°C" },
+    { name:"Nature's Valley", lat:-33.984, lng:23.549, type:"Beachbreak · Sand", offshore:"N", swell:"S-SW", seaTemp:"21°C" },
+    { name:"Cape St. Francis", lat:-34.191, lng:24.841, type:"Right pointbreak · Sand & reef", offshore:"NW", swell:"S-SW",
+      surfline:"https://www.surfline.com/surf-report/cape-st-francis/640a1c1199dd4460e7fa5e4b", seaTemp:"21°C" },
+    { name:"Seal Point", lat:-34.203, lng:24.840, type:"Right pointbreak · Rock ledge", offshore:"W", swell:"E-SW",
+      surfline:"https://www.surfline.com/surf-report/seal-point/5842041f4e65fad6a7708d0b",
+      stormrider:"https://www.stormrider.surf/break/seal-point", seaTemp:"21°C" },
+    { name:"St. Francis Bay", lat:-34.160, lng:24.824, type:"Beachbreak · Sand", offshore:"NW", swell:"S-SW",
+      surfline:"https://www.surfline.com/surf-report/st-francis-bay/5842041f4e65fad6a7708d0c", seaTemp:"21°C" },
+    { name:"J-Bay (Supertubes)", lat:-34.049, lng:24.926, type:"Right pointbreak · Sand & reef", offshore:"SW-W", swell:"S-SW",
+      surfline:"https://www.surfline.com/surf-report/jeffreys-bay-j-bay-/5842041f4e65fad6a7708d0f",
+      stormrider:"https://www.stormrider.surf/break/j-bay", seaTemp:"21°C" }
+  ],
+  dayData: {
+    today_pm: {
+      label:"Today PM — Wed 18 · ⛈️ Thunderstorms · 22-24°C · 22°C sea",
+      conditions:"Afternoon: swell building, SE cross wind. Buffels Bay lightest wind. ⛈️ Thunderstorms possible.",
+      spots: [
+        { name:"Buffels Bay", pm:{score:3,surf:"0.5-0.8m (Surfline) / 1.2-1.5m (Marine)",swell:"1.35m@10s SSW",wind:"3.9 kph SE (Open-Meteo) vs 34 kph SE (Surfline—over-reports!)",wt:"cross"}, note:"📊 Open-Meteo 4 kph + Windy 10 kph agree—Surfline 34 kph way off! 55min." },
+        { name:"J-Bay (Supertubes)", pm:{score:2,surf:"0.6-1.1m",swell:"0.98m@6.5s S",wind:"9 kph WSW (29g)",wt:"offshore"}, note:"WSW offshore but small. 3hr—not worth today." },
+        { name:"Goukamma", pm:{score:2,surf:"~1.0-1.2m",swell:"est. Buffels",wind:"~4 kph SE",wt:"cross"}, note:"⚠️ No Surfline. Light SE cross. 45min." },
+        { name:"Victoria Bay", pm:{score:1,surf:"1.2-1.5m",swell:"1.40m@6.4s S",wind:"10.2→16.2 kph ESE (22-30g)",wt:"cross"}, note:"Gusty ESE building. 0 drive." },
+        { name:"Wilderness", pm:{score:1,surf:"~1.2-1.5m",swell:"similar Vic Bay",wind:"~8 kph ESE",wt:"cross"}, note:"Cross. 5min." },
+        { name:"Swartvlei Beach", pm:{score:1,surf:"~1.0m",swell:"est.",wind:"~10 kph SE",wt:"cross"}, note:"Too windy. 25min." },
+        { name:"Keurbooms", pm:{score:1,surf:"~0.9m",swell:"est.",wind:"~10 kph SE",wt:"onshore"}, note:"Onshore. 1hr30." },
+        { name:"Lookout Beach", pm:{score:1,surf:"~0.6m",swell:"est.",wind:"~8 kph SE",wt:"onshore"}, note:"Too small. 1hr25." },
+        { name:"The Wedge (Plett)", pm:{score:1,surf:"~0.6m",swell:"est.",wind:"~9 kph SE",wt:"onshore"}, note:"Too small. 1hr25." },
+        { name:"Nature's Valley", pm:{score:1,surf:"~0.6m",swell:"est.",wind:"~10 kph ESE",wt:"cross"}, note:"⚠️ No Surfline. 1hr45." },
+        { name:"Cape St. Francis", pm:{score:1,surf:"~0.6m",swell:"est.",wind:"~12 kph SE",wt:"cross"}, note:"Too small+windy. 2hr50." },
+        { name:"Seal Point", pm:{score:1,surf:"~0.9m",swell:"est.",wind:"~12 kph SE",wt:"onshore"}, note:"Windy. 2hr50." },
+        { name:"St. Francis Bay", pm:{score:1,surf:"~0.6m",swell:"est.",wind:"~12 kph SE",wt:"onshore"}, note:"Skip. 2hr50." },
+        { name:"Outer Pool", pm:{score:1,surf:"~1.4-1.6m",swell:"1.08m@6.8s SSE",wind:"15 kph ESE (29g)",wt:"onshore"}, note:"ESE onshore. ⛈️ 15mm rain. 45min W." },
+        { name:"Inner Pool", pm:{score:1,surf:"~1.4-1.6m",swell:"same Outer Pool",wind:"15 kph ESE (29g)",wt:"onshore"}, note:"ESE onshore. 45min W." },
+        { name:"Diaz Beach", pm:{score:1,surf:"~1.3-1.5m",swell:"est.",wind:"~15 kph ESE",wt:"onshore"}, note:"Onshore+storms. 40min W." }
+      ]
+    },
+    thu: {
+      label:"Thursday 19 · ⭐ BEST DAWN · 🌦️ 22-33°C · 21-22°C sea",
+      conditions:"Peak swell! Dawn GOLD—ultra-light wind. Buffels Bay 1.4 kph GLASS! Vic Bay 1.96m. Mossel Bay 1.94m but 11 kph E onshore. J-Bay HOT 33°C!",
+      spots: [
+        { name:"Buffels Bay",
+          am:{score:5,surf:"1.0-1.1m (Surfline) / 1.5-1.8m (Marine)",swell:"1.59m@12s SSW",wind:"1.4 kph GLASS! (Open-Meteo) vs 41 kph E (Surfline—ignore!)",wt:"light"},
+          pm:{score:2,surf:"0.9-1.1m",swell:"1.69m@12s SSW",wind:"10.8 kph SW",wt:"cross"},
+          note:"📊 'Waist-chest' + 12s swell! Three sources confirm LIGHT wind = GLASS! ⭐ Best session of week. 55min." },
+        { name:"Victoria Bay",
+          am:{score:4,surf:"1.2-1.8m",swell:"1.58m@6.1s SSE",wind:"6.0 kph ENE (12g)",wt:"cross"},
+          pm:{score:2,surf:"~1.2-1.5m",swell:"holding",wind:"9.4 kph SE (21g)",wt:"cross"},
+          note:"Marine: 1.96m wave. Biggest of week. ENE cross dawn but manageable. 0 drive." },
+        { name:"Wilderness",
+          am:{score:4,surf:"~1.2-1.8m",swell:"similar Vic Bay",wind:"4.7 kph N (offshore!)",wt:"offshore"},
+          pm:{score:2,surf:"~1.2-1.5m",swell:"holding",wind:"~10 kph SE",wt:"onshore"},
+          note:"4.7 kph N at 5am = offshore! 5min." },
+        { name:"Keurbooms",
+          am:{score:4,surf:"~1.2-1.5m",swell:"~1.5m S",wind:"3 kph NE",wt:"cross"},
+          pm:{score:2,surf:"~1.2m",swell:"holding",wind:"~10 kph SE",wt:"onshore"},
+          note:"NE offshore dawn glass. 1hr30." },
+        { name:"Goukamma",
+          am:{score:4,surf:"~1.5m",swell:"est. Buffels",wind:"~2 kph calm",wt:"light"},
+          pm:{score:2,surf:"~1.5m",swell:"holding",wind:"~12 kph SE",wt:"onshore"},
+          note:"⚠️ No Surfline. Marine: 2.10m nearby. Ultra-calm dawn. 45min." },
+        { name:"Swartvlei Beach",
+          am:{score:3,surf:"~1.2-1.5m",swell:"est.",wind:"~4 kph NE",wt:"offshore"},
+          pm:{score:2,surf:"~1.2m",swell:"holding",wind:"~9 kph SE",wt:"onshore"},
+          note:"NE dawn offshore. 25min." },
+        { name:"Lookout Beach",
+          am:{score:3,surf:"~0.9-1.2m",swell:"est.",wind:"~3 kph N (offshore)",wt:"offshore"},
+          pm:{score:2,surf:"~1.0m",swell:"holding",wind:"~10 kph SE",wt:"onshore"},
+          note:"N offshore! Rivermouth barrels. 1hr25." },
+        { name:"The Wedge (Plett)",
+          am:{score:3,surf:"~1.2-1.5m",swell:"est.",wind:"~3 kph N",wt:"offshore"},
+          pm:{score:2,surf:"~1.2m",swell:"holding",wind:"~10 kph SE",wt:"onshore"},
+          note:"N dawn offshore. 1hr25." },
+        { name:"J-Bay (Supertubes)",
+          am:{score:2,surf:"~0.9-1.2m",swell:"1.12m@5.7s SSE",wind:"6.4→14.2 kph ENE (22g)",wt:"onshore"},
+          pm:{score:1,surf:"~0.9m",swell:"holding",wind:"~18 kph E",wt:"onshore"},
+          note:"Wind builds fast. Not worth 3hr drive." },
+        { name:"Outer Pool",
+          am:{score:2,surf:"~1.9m",swell:"1.66m@6.4s SSE",wind:"11 kph E (25g)",wt:"onshore"},
+          pm:{score:1,surf:"~1.8m",swell:"1.44m@5.5s SE",wind:"8-13 kph variable",wt:"cross"},
+          note:"Marine: 1.94m BIG! But E onshore. 🌡️ Mossel Bay clear! 45min W." },
+        { name:"Inner Pool",
+          am:{score:2,surf:"~1.9m",swell:"same Outer Pool",wind:"11 kph E (25g)",wt:"onshore"},
+          pm:{score:1,surf:"~1.8m",swell:"similar",wind:"similar",wt:"cross"},
+          note:"Good size, wrong wind. 45min W." },
+        { name:"Diaz Beach",
+          am:{score:2,surf:"~1.8m",swell:"est.",wind:"~11 kph E",wt:"onshore"},
+          pm:{score:1,surf:"~1.7m",swell:"dropping",wind:"~12 kph SE",wt:"onshore"},
+          note:"E cross for WNW-facing Diaz. 40min W." },
+        { name:"Nature's Valley",
+          am:{score:2,surf:"~1.0m",swell:"est.",wind:"4 kph E",wt:"cross"},
+          pm:{score:1,surf:"~1.0m",swell:"holding",wind:"~12 kph SE",wt:"onshore"},
+          note:"⚠️ No Surfline. E cross. 1hr45." },
+        { name:"Cape St. Francis",
+          am:{score:1,surf:"~1.0m",swell:"est.",wind:"13.5 kph E",wt:"onshore"},
+          pm:{score:1,surf:"~1.2m",swell:"est.",wind:"~25 kph E",wt:"onshore"},
+          note:"Already windy at 5am. Skip. 2hr50." },
+        { name:"Seal Point",
+          am:{score:1,surf:"~1.2m",swell:"est.",wind:"13.5 kph E",wt:"onshore"},
+          pm:{score:1,surf:"~1.5m",swell:"big",wind:"~25 kph E",wt:"onshore"},
+          note:"Blown out. 2hr50." },
+        { name:"St. Francis Bay",
+          am:{score:1,surf:"~0.9m",swell:"est.",wind:"~13 kph E",wt:"onshore"},
+          pm:{score:1,surf:"~1.0m",swell:"est.",wind:"~25 kph E",wt:"onshore"},
+          note:"Skip. 2hr50." }
+      ]
+    },
+    fri: {
+      label:"Friday 20 · ⚠️ Windy · ☁️ 20-26°C · 21°C sea",
+      conditions:"Strong wind everywhere! Buffels Bay 2.5 kph dawn = ONLY calm spot. Mossel Bay 14 kph W offshore but 55g gusts! J-Bay 20.3 kph W (44g!).",
+      spots: [
+        { name:"Buffels Bay",
+          am:{score:3,surf:"~1.1-1.3m (Surfline) / 1.5m (Marine)",swell:"~11s SSW",wind:"2.5 kph SW (Open-Meteo) vs 29 kph (Surfline)",wt:"light"},
+          pm:{score:1,surf:"~1.3-1.6m peak!",swell:"1.33-1.55m@11s",wind:"~12 kph SE",wt:"onshore"},
+          note:"📊 Surfline peak 'chest-head'! Open-Meteo 2.5 kph vs Windy 15 kph. Sheltered! 55min." },
+        { name:"Victoria Bay",
+          am:{score:2,surf:"~1.2-1.5m",swell:"est.",wind:"10.9 kph W (21g)",wt:"cross"},
+          pm:{score:1,surf:"~1.8m",swell:"big",wind:"~16 kph SE (35g)",wt:"cross"},
+          note:"Gusty W dawn. PM blown. 0 drive." },
+        { name:"Outer Pool",
+          am:{score:2,surf:"~1.7m",swell:"1.02m@8.0s SSE",wind:"14 kph W (27g)",wt:"offshore"},
+          pm:{score:1,surf:"~1.8-1.9m",swell:"1.36m@8.2s SSW",wind:"26-28 kph WSW (55g!)",wt:"offshore"},
+          note:"W OFFSHORE but 14 kph+gusts too strong. PM storm 28 kph (55g!). 45min W." },
+        { name:"Inner Pool",
+          am:{score:2,surf:"~1.7m",swell:"same Outer Pool",wind:"14 kph W (27g)",wt:"offshore"},
+          pm:{score:1,surf:"~1.8m",swell:"big",wind:"26 kph WSW (55g!)",wt:"offshore"},
+          note:"W offshore but too strong. 45min W." },
+        { name:"Diaz Beach",
+          am:{score:2,surf:"~1.6m",swell:"est.",wind:"~14 kph W",wt:"offshore"},
+          pm:{score:1,surf:"~1.8m",swell:"building",wind:"~26 kph WSW",wt:"cross"},
+          note:"W close to WNW offshore. Strong but rideable early. 40min W." },
+        { name:"Goukamma", am:{score:1,surf:"~1.2m",swell:"est.",wind:"~3 kph SW",wt:"cross"}, note:"Light dawn but less size. 45min." },
+        { name:"Wilderness", am:{score:1,surf:"~1.2m",swell:"est.",wind:"~10 kph W (25g)",wt:"cross"}, note:"Gusty. 5min." },
+        { name:"Swartvlei Beach", am:{score:1,surf:"~1.0m",swell:"est.",wind:"~10 kph W",wt:"cross"}, note:"Cross. 25min." },
+        { name:"Keurbooms", am:{score:1,surf:"~1.0m",swell:"est.",wind:"~14 kph W (35g)",wt:"cross"}, note:"W cross. 1hr30." },
+        { name:"Lookout Beach", am:{score:1,surf:"~0.6m",swell:"est.",wind:"~10 kph W",wt:"cross"}, note:"Small+windy. 1hr25." },
+        { name:"The Wedge (Plett)", am:{score:1,surf:"~0.6m",swell:"est.",wind:"~10 kph W",wt:"cross"}, note:"Small+windy. 1hr25." },
+        { name:"Nature's Valley", am:{score:1,surf:"~0.9m",swell:"est.",wind:"~18 kph W (40g)",wt:"cross"}, note:"⚠️ Hammered. 1hr45." },
+        { name:"J-Bay (Supertubes)", am:{score:1,surf:"~0.9m",swell:"est.",wind:"20.3 kph W (44g!)",wt:"offshore"}, note:"W offshore but 20 kph+44g! Too gusty. 3hr." },
+        { name:"Cape St. Francis", am:{score:1,surf:"~1.0m",swell:"est.",wind:"~20 kph W (40g)",wt:"cross"}, note:"Skip. 2hr50." },
+        { name:"Seal Point", am:{score:1,surf:"~1.2m",swell:"est.",wind:"~20 kph W (40g)",wt:"offshore"}, note:"Offshore but 20+kph DANGEROUS. 2hr50." },
+        { name:"St. Francis Bay", am:{score:1,surf:"~0.9m",swell:"est.",wind:"~20 kph W",wt:"cross"}, note:"Storm. 2hr50." }
+      ]
+    },
+    sat: {
+      label:"Saturday 21 · ⭐ ☀️ CLEAR! · 17-23°C · 21°C sea · UV 7!",
+      conditions:"☀️ Clear everywhere! NW/N offshore dawn. Vic Bay 2.06m + NW offshore! Buffels 2.22m biggest! Mossel Bay 1.9m + W offshore dropping = GLASS by 10am!",
+      spots: [
+        { name:"Victoria Bay",
+          am:{score:4,surf:"1.5-2.1m",swell:"Surfline",wind:"7.2 kph NW (14g)",wt:"offshore"},
+          pm:{score:1,surf:"~1.2-1.5m",swell:"dropping",wind:"~16 kph SE (35g)",wt:"cross"},
+          note:"Marine: 2.06m! NW OFFSHORE ⭐ Biggest clean morning. SE by 10am. 0 drive." },
+        { name:"Buffels Bay",
+          am:{score:4,surf:"~1.5-2.0m (Marine)",swell:"2.12m@7.8s SSW",wind:"5.1 kph NW vs 11 kph WSW (Surfline)",wt:"light"},
+          pm:{score:1,surf:"~1.5m",swell:"holding",wind:"3 kph N noon → 22 kph E 6pm",wt:"cross"},
+          note:"📊 All 3 sources agree light wind! Marine: 2.22m BIGGEST of week! ⭐ Epic dawn. 55min." },
+        { name:"Outer Pool",
+          am:{score:4,surf:"~1.9m",swell:"1.72m@7.9s S",wind:"10.5→6.8 kph W→WNW",wt:"offshore"},
+          pm:{score:2,surf:"~1.7m",swell:"1.72m@7.8s S",wind:"3-5 kph WNW noon",wt:"offshore"},
+          note:"⭐ W→WNW OFFSHORE dropping! PM 3 kph = GLASS! ☀️ UV 7.1. 45min W." },
+        { name:"Inner Pool",
+          am:{score:4,surf:"~1.9m",swell:"same Outer Pool",wind:"10.5→6.8 kph W→WNW",wt:"offshore"},
+          pm:{score:2,surf:"~1.7m",swell:"similar",wind:"3-5 kph WNW noon",wt:"offshore"},
+          note:"⭐ Same epic conditions! Friendlier wave. 45min W." },
+        { name:"J-Bay (Supertubes)",
+          am:{score:4,surf:"~1.2-1.8m",swell:"1.12m@8.0s SSW",wind:"10.8 kph W (24g)",wt:"offshore"},
+          pm:{score:2,surf:"~1.2-1.5m",swell:"dropping",wind:"~15 kph SW (34g)",wt:"offshore"},
+          note:"W offshore! But gusty 10.8 kph. 3hr drive." },
+        { name:"Wilderness",
+          am:{score:4,surf:"~1.5-1.8m",swell:"similar Vic Bay",wind:"~5 kph NW",wt:"offshore"},
+          pm:{score:1,surf:"~1.2m",swell:"dropping",wind:"~12 kph SE",wt:"onshore"},
+          note:"NW offshore dawn! Big powerful beachbreak. 5min." },
+        { name:"Seal Point",
+          am:{score:3,surf:"~1.5-2.0m",swell:"3.5m (Surfline)",wind:"~6 kph E",wt:"onshore"},
+          pm:{score:1,surf:"~1.5m",swell:"dropping",wind:"~13 kph S",wt:"onshore"},
+          note:"Surfline: HUGE 3.5m swell! Brief dawn window. 2hr50." },
+        { name:"Diaz Beach",
+          am:{score:3,surf:"~1.8m",swell:"est.",wind:"~10 kph W",wt:"offshore"},
+          pm:{score:2,surf:"~1.6m",swell:"dropping",wind:"~5 kph WNW noon",wt:"offshore"},
+          note:"W offshore. Big beachbreak. ☀️ 40min W." },
+        { name:"Goukamma",
+          am:{score:3,surf:"~1.5m",swell:"est. Buffels",wind:"~5 kph NW",wt:"offshore"},
+          pm:{score:1,surf:"~1.5m",swell:"holding",wind:"~12 kph SE",wt:"onshore"},
+          note:"⚠️ No Surfline. NW dawn offshore. 45min." },
+        { name:"Swartvlei Beach",
+          am:{score:3,surf:"~1.2-1.5m",swell:"est.",wind:"~5 kph NW",wt:"offshore"},
+          pm:{score:1,surf:"~1.2m",swell:"similar",wind:"~12 kph SE",wt:"onshore"},
+          note:"NW offshore dawn. 25min." },
+        { name:"Lookout Beach",
+          am:{score:2,surf:"~0.9-1.2m",swell:"est.",wind:"~4 kph E",wt:"cross"},
+          pm:{score:1,surf:"~1.0m",swell:"similar",wind:"~10 kph SE",wt:"onshore"},
+          note:"Light wind dawn. 1hr25." },
+        { name:"The Wedge (Plett)",
+          am:{score:2,surf:"~1.2-1.5m",swell:"est.",wind:"~4 kph E",wt:"cross"},
+          pm:{score:1,surf:"~1.0m",swell:"similar",wind:"~10 kph SE",wt:"onshore"},
+          note:"Dawn only. 1hr25." },
+        { name:"Cape St. Francis",
+          am:{score:2,surf:"~1.2-1.5m",swell:"est.",wind:"~7 kph E",wt:"cross"},
+          pm:{score:1,surf:"~1.5m",swell:"est.",wind:"~13 kph S",wt:"onshore"},
+          note:"Brief dawn. 2hr50." },
+        { name:"Keurbooms",
+          am:{score:2,surf:"~1.0-1.2m",swell:"est.",wind:"~5 kph E",wt:"cross"},
+          pm:{score:1,surf:"~1.0m",swell:"holding",wind:"~10 kph SE",wt:"onshore"},
+          note:"E cross. 1hr30." },
+        { name:"St. Francis Bay",
+          am:{score:2,surf:"~1.0-1.2m",swell:"est.",wind:"~7 kph E",wt:"cross"},
+          pm:{score:1,surf:"~1.2m",swell:"big",wind:"~10 kph S",wt:"onshore"},
+          note:"Dawn window. 2hr50." },
+        { name:"Nature's Valley",
+          am:{score:2,surf:"~0.9-1.2m",swell:"est.",wind:"~8 kph NW",wt:"offshore"},
+          pm:{score:1,surf:"~1.0m",swell:"holding",wind:"~12 kph WSW",wt:"cross"},
+          note:"⚠️ NW offshore but gusty. 1hr45." }
+      ]
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+// DATA: CAPE TOWN
+// ═══════════════════════════════════════════════════════════
+const CT = {
+  title: '<b>Cape Peninsula</b> · Muizenberg → Big Bay · Mar 23–29',
+  mapCenter: [-34.05, 18.40], mapZoom: 11,
+  locPresets: {
+    kalkBay: { lat:-34.130, lng:18.450, name:"Kalk Bay" },
+    muizenberg: { lat:-34.109, lng:18.471, name:"Muizenberg" },
+    simonsTown: { lat:-34.195, lng:18.435, name:"Simon's Town" },
+    kommetjie: { lat:-34.138, lng:18.318, name:"Kommetjie" },
+    houtBay: { lat:-34.048, lng:18.353, name:"Hout Bay" },
+    campsBay: { lat:-33.950, lng:18.380, name:"Camps Bay" }
+  },
+  homeLoc: 'kalkBay',
+  weather: [
+    { day:"Mon 23", icon:"☀️", temp:"30°C", desc:"NE Berg · Flat", sea:"15-19°C", detail:"Hot! No swell", tide:"▲08:30 (1.4m) · ▼14:45" },
+    { day:"Tue 24", icon:"⛅", temp:"26°C", desc:"SE building", sea:"15-19°C", detail:"Swell arriving!", tide:"▲09:15 (1.3m) · ▼15:30" },
+    { day:"Wed 25", icon:"☁️", temp:"24°C", desc:"SE + Big swell", sea:"15-19°C", detail:"Big Bay EPIC!", tide:"▲10:05 (1.3m) · ▼16:20" },
+    { day:"Thu 26", icon:"💨", temp:"25°C", desc:"SE HOWLING", sea:"15-19°C", detail:"Only Big Bay", tide:"▲11:00 (1.2m) · ▼17:15" },
+    { day:"Fri 27", icon:"☀️", temp:"23°C", desc:"GLASS ⭐⭐", sea:"15-19°C", detail:"Everything works!", tide:"▼05:45 · ▲12:00 (1.2m)" },
+    { day:"Sat 28", icon:"🌧️", temp:"20°C", desc:"NW Front", sea:"15-19°C", detail:"False Bay offshore!", tide:"▼06:50 · ▲13:05 (1.2m)" },
+    { day:"Sun 29", icon:"⛅", temp:"18°C", desc:"POST-FRONT ⭐⭐", sea:"15-19°C", detail:"2.5m swell! Epic!", tide:"▼07:55 · ▲14:10 (1.3m)" }
+  ],
+  overview: `<strong>Mon 23:</strong> NE berg wind, flat. Skip—go to the beach 🏖️<br>
+<strong>Tue 24:</strong> Swell arrives! Big Bay fires with SE offshore. Dawn glass at False Bay then SE ruins it.<br>
+<strong>⭐ Wed 25:</strong> Big Bay EPIC! SE offshore + 2m SW swell. Rest blown out.<br>
+<strong>Thu 26:</strong> SE howling 25-30 kph. Big Bay only option (gusty). Rest day?<br>
+<strong>⭐⭐ Fri 27 = BEST DAY!</strong> GLASS everywhere! Kalk Bay Reef perfection! Every spot works.<br>
+<strong>Sat 28:</strong> NW front—offshore at Muizenberg & Kalk Bay! Building swell. Atlantic destroyed.<br>
+<strong>⭐⭐ Sun 29:</strong> Post-front 2-2.5m! <strong>Muizenberg & Kalk Bay PUMPING + NW offshore = EPIC!</strong>`,
+  days: [
+    { key:'mon23', label:'Mon 23', sub:'☀️ Flat' },
+    { key:'tue24', label:'Tue 24', sub:'Swell arrives' },
+    { key:'wed25', label:'Wed 25', sub:'⭐ Big Bay!' },
+    { key:'thu26', label:'Thu 26', sub:'💨 SE howl' },
+    { key:'fri27', label:'Fri 27', sub:'⭐⭐ GLASS!' },
+    { key:'sat28', label:'Sat 28', sub:'🌧️ Front' },
+    { key:'sun29', label:'Sun 29', sub:'⭐⭐ EPIC!' }
+  ],
+  tideData: {
+    mon23:[{time:"02:15",height:0.4,type:"L"},{time:"08:30",height:1.4,type:"H"},{time:"14:45",height:0.5,type:"L"},{time:"21:00",height:1.3,type:"H"}],
+    tue24:[{time:"03:00",height:0.5,type:"L"},{time:"09:15",height:1.3,type:"H"},{time:"15:30",height:0.5,type:"L"},{time:"21:45",height:1.2,type:"H"}],
+    wed25:[{time:"03:50",height:0.5,type:"L"},{time:"10:05",height:1.3,type:"H"},{time:"16:20",height:0.6,type:"L"},{time:"22:35",height:1.2,type:"H"}],
+    thu26:[{time:"04:45",height:0.6,type:"L"},{time:"11:00",height:1.2,type:"H"},{time:"17:15",height:0.6,type:"L"},{time:"23:30",height:1.1,type:"H"}],
+    fri27:[{time:"05:45",height:0.6,type:"L"},{time:"12:00",height:1.2,type:"H"},{time:"18:15",height:0.7,type:"L"}],
+    sat28:[{time:"00:30",height:1.1,type:"H"},{time:"06:50",height:0.6,type:"L"},{time:"13:05",height:1.2,type:"H"},{time:"19:20",height:0.7,type:"L"}],
+    sun29:[{time:"01:35",height:1.2,type:"H"},{time:"07:55",height:0.5,type:"L"},{time:"14:10",height:1.3,type:"H"},{time:"20:25",height:0.6,type:"L"}]
+  },
+  tidePrefs: {
+    "Muizenberg":"All tides · best low→mid","Kalk Bay Reef":"Mid→high · needs coverage",
+    "Long Beach":"All tides · best low→mid","Outer Kom":"Mid→high · avoid low",
+    "Scarborough":"All tides","Misty Cliffs":"Mid→high · advanced only",
+    "Dunes (Noordhoek)":"All tides · best low→mid","Llandudno":"All tides · best mid",
+    "Glen Beach":"Mid→high · needs swell","Big Bay":"All tides"
+  },
+  spots: [
+    { name:"Muizenberg", lat:-34.109, lng:18.471, type:"Beach break · Sand", offshore:"NNW", swell:"S-SW",
+      surfline:"https://www.surfline.com/surf-report/muizenberg/584204204e65fad6a7709492", seaTemp:"19°C" },
+    { name:"Kalk Bay Reef", lat:-34.130, lng:18.445, type:"Right reef · Rock shelves", offshore:"N", swell:"S-SW", seaTemp:"19°C" },
+    { name:"Long Beach", lat:-34.100, lng:18.340, type:"Beach break · Sand (powerful)", offshore:"ENE", swell:"SW-W",
+      surfline:"https://www.surfline.com/surf-report/long-beach-kommetjie/584204204e65fad6a770948f", seaTemp:"15°C" },
+    { name:"Outer Kom", lat:-34.138, lng:18.318, type:"Left reef · Rock", offshore:"NE", swell:"SW-W",
+      surfline:"https://www.surfline.com/surf-report/kommetjie/584204204e65fad6a7709490", seaTemp:"15°C" },
+    { name:"Scarborough", lat:-34.207, lng:18.370, type:"Beach break · Sand", offshore:"E", swell:"SW-W", seaTemp:"15°C" },
+    { name:"Misty Cliffs", lat:-34.213, lng:18.355, type:"Point break · Rock", offshore:"E", swell:"SW-S", seaTemp:"15°C" },
+    { name:"Dunes (Noordhoek)", lat:-34.110, lng:18.355, type:"Beach break · Sand", offshore:"ENE", swell:"SW-W", seaTemp:"15°C" },
+    { name:"Llandudno", lat:-34.005, lng:18.338, type:"Beach break · Sand & granite", offshore:"E", swell:"SW-W",
+      surfline:"https://www.surfline.com/surf-report/llandudno/584204204e65fad6a770948e", seaTemp:"14°C" },
+    { name:"Glen Beach", lat:-33.950, lng:18.380, type:"Reef break · Rock & sand", offshore:"E", swell:"SW-W", seaTemp:"14°C" },
+    { name:"Big Bay", lat:-33.798, lng:18.462, type:"Beach break · Sand", offshore:"SE", swell:"SW-W",
+      surfline:"https://www.surfline.com/surf-report/big-bay/584204204e65fad6a7709491", seaTemp:"14°C" }
+  ],
+  dayData: {
+    mon23: {
+      label:"Mon 23 · ☀️ HOT 30°C · NE Berg · Flat 0.5-1m",
+      conditions:"Berg wind day! NE offshore on Atlantic side but barely any swell. False Bay tiny. Wait for tomorrow.",
+      spots: [
+        { name:"Outer Kom", am:{score:2,surf:"0.5-0.8m",swell:"0.6m@8s SW",wind:"12 kph NE",wt:"offshore"}, note:"NE offshore! Small lefts. Longboard." },
+        { name:"Long Beach", am:{score:2,surf:"0.5-0.8m",swell:"0.6m@8s SW",wind:"15 kph NE",wt:"offshore"}, note:"NE offshore but tiny." },
+        { name:"Dunes (Noordhoek)", am:{score:2,surf:"0.5-0.8m",swell:"0.6m@8s SW",wind:"15 kph NE",wt:"offshore"}, note:"NE offshore. Scraps." },
+        { name:"Scarborough", am:{score:1,surf:"0.3-0.5m",swell:"tiny",wind:"12 kph NE",wt:"cross"}, note:"Almost flat." },
+        { name:"Muizenberg", am:{score:1,surf:"0.3-0.5m",swell:"tiny",wind:"8 kph NE",wt:"cross"}, note:"Flat. Beach day." },
+        { name:"Kalk Bay Reef", am:{score:1,surf:"flat",swell:"—",wind:"8 kph NE",wt:"cross"}, note:"Needs swell." },
+        { name:"Llandudno", am:{score:1,surf:"0.3-0.5m",swell:"tiny",wind:"10 kph NE",wt:"cross"}, note:"Barely rideable." },
+        { name:"Glen Beach", am:{score:1,surf:"flat",swell:"—",wind:"10 kph NE",wt:"cross"}, note:"Needs bigger swell." },
+        { name:"Big Bay", am:{score:1,surf:"0.3m",swell:"tiny",wind:"10 kph NE",wt:"cross"}, note:"NE cross. Flat." },
+        { name:"Misty Cliffs", am:{score:1,surf:"0.3m",swell:"tiny",wind:"8 kph NE",wt:"cross"}, note:"Nothing." }
+      ]
+    },
+    tue24: {
+      label:"Tue 24 · ⛅ 26°C · SE building · SW swell 1-1.5m arriving!",
+      conditions:"Swell arrives! SE wind building through day. Big Bay turns on with SE offshore. Dawn glass at Muizenberg/Kalk Bay then SE ruins it.",
+      spots: [
+        { name:"Big Bay",
+          am:{score:4,surf:"1.0-1.5m",swell:"1.2m@10s SW",wind:"8 kph SE",wt:"offshore"},
+          pm:{score:4,surf:"1.2-1.5m",swell:"1.4m@10s SW",wind:"18 kph SE",wt:"offshore"},
+          note:"⭐ SE OFFSHORE all day! Swell building. Best spot today." },
+        { name:"Muizenberg",
+          am:{score:3,surf:"0.8-1.2m",swell:"1.0m@10s SW",wind:"3 kph calm",wt:"light"},
+          pm:{score:1,surf:"1.0m",swell:"building",wind:"15 kph SE",wt:"onshore"},
+          note:"Glassy dawn! SE ruins it by 10am. 📍 10min from Kalk Bay." },
+        { name:"Kalk Bay Reef",
+          am:{score:3,surf:"0.8-1.2m",swell:"1.0m@10s SW",wind:"3 kph calm",wt:"light"},
+          pm:{score:1,surf:"1.0m",swell:"building",wind:"15 kph SE",wt:"onshore"},
+          note:"Dawn glass on the reef. Blown by 10am. 📍 Home break." },
+        { name:"Llandudno",
+          am:{score:3,surf:"0.8-1.2m",swell:"1.2m@10s SW",wind:"4 kph calm",wt:"light"},
+          pm:{score:2,surf:"1.2m",swell:"building",wind:"12 kph SE",wt:"cross"},
+          note:"Sheltered from SE. Beautiful dawn." },
+        { name:"Long Beach",
+          am:{score:3,surf:"1.0-1.5m",swell:"1.2m@10s SW",wind:"5 kph E",wt:"offshore"},
+          pm:{score:2,surf:"1.5m",swell:"building",wind:"15 kph SE",wt:"cross"},
+          note:"E→ENE offshore dawn. Powerful beachbreak." },
+        { name:"Outer Kom",
+          am:{score:2,surf:"0.8-1.0m",swell:"1.0m@10s SW",wind:"5 kph E",wt:"cross"},
+          pm:{score:1,surf:"1.0m",swell:"building",wind:"15 kph SE",wt:"cross"},
+          note:"E cross dawn. Needs more swell." },
+        { name:"Dunes (Noordhoek)",
+          am:{score:2,surf:"0.8-1.0m",swell:"1.0m@10s SW",wind:"5 kph E",wt:"offshore"},
+          pm:{score:1,surf:"1.0m",swell:"building",wind:"15 kph SE",wt:"cross"},
+          note:"Light offshore dawn." },
+        { name:"Glen Beach",
+          am:{score:2,surf:"0.5-0.8m",swell:"0.8m@10s SW",wind:"3 kph calm",wt:"light"},
+          note:"Needs more swell." },
+        { name:"Scarborough",
+          am:{score:2,surf:"0.8-1.0m",swell:"1.0m@10s SW",wind:"5 kph E",wt:"offshore"},
+          note:"E offshore dawn. Small." },
+        { name:"Misty Cliffs",
+          am:{score:2,surf:"0.8-1.0m",swell:"1.0m@10s SW",wind:"5 kph E",wt:"offshore"},
+          note:"Small clean dawn. Advanced." }
+      ]
+    },
+    wed25: {
+      label:"Wed 25 · ☁️ 24°C · SE 15-20kph · SW swell 1.5-2m!",
+      conditions:"⭐ Big Bay EPIC! SE offshore + 2m SW swell. Glen Beach sheltered option. Rest mostly blown. False Bay destroyed by SE.",
+      spots: [
+        { name:"Big Bay",
+          am:{score:5,surf:"1.5-2.0m",swell:"1.8m@11s SW",wind:"15 kph SE",wt:"offshore"},
+          pm:{score:4,surf:"1.5-2.0m",swell:"1.8m@11s SW",wind:"20 kph SE",wt:"offshore"},
+          note:"🔥 EPIC! SE OFFSHORE + big swell. Clean barrels. Best session of the week!" },
+        { name:"Glen Beach",
+          am:{score:3,surf:"1.0-1.5m",swell:"1.2m@11s SW",wind:"8 kph SE",wt:"cross"},
+          pm:{score:2,surf:"1.0-1.5m",swell:"holding",wind:"12 kph SE",wt:"cross"},
+          note:"Partially sheltered from SE. Fun reef." },
+        { name:"Llandudno",
+          am:{score:2,surf:"1.2-1.5m",swell:"1.5m@11s SW",wind:"12 kph SE",wt:"cross"},
+          note:"Cross. Dawn only." },
+        { name:"Long Beach",
+          am:{score:2,surf:"1.5-2.0m",swell:"1.8m@11s SW",wind:"12 kph SE",wt:"cross"},
+          note:"Big but SE cross. Powerful & messy." },
+        { name:"Outer Kom",
+          am:{score:2,surf:"1.2-1.5m",swell:"1.5m@11s SW",wind:"12 kph SE",wt:"cross"},
+          note:"SE bumpy on the lefts." },
+        { name:"Dunes (Noordhoek)",
+          am:{score:2,surf:"1.5-2.0m",swell:"1.8m@11s SW",wind:"12 kph SE",wt:"cross"},
+          note:"Big messy beachbreak." },
+        { name:"Muizenberg", am:{score:1,surf:"1.0-1.5m",swell:"1.2m@11s SW",wind:"15 kph SE",wt:"onshore"}, note:"SE onshore. Skip." },
+        { name:"Kalk Bay Reef", am:{score:1,surf:"1.0-1.5m",swell:"1.2m@11s SW",wind:"15 kph SE",wt:"onshore"}, note:"SE onshore. Skip." },
+        { name:"Scarborough", am:{score:1,surf:"1.5m",swell:"big",wind:"15 kph SE",wt:"cross"}, note:"Messy." },
+        { name:"Misty Cliffs", am:{score:1,surf:"1.5m",swell:"big",wind:"15 kph SE",wt:"cross"}, note:"Dangerous in these conditions." }
+      ]
+    },
+    thu26: {
+      label:"Thu 26 · 💨 SE HOWLING 25-30kph · 25°C · Swell 1.5-2m",
+      conditions:"SE HOWLING! Big Bay only option but very gusty. Everything else destroyed. Consider rest day.",
+      spots: [
+        { name:"Big Bay",
+          am:{score:3,surf:"1.5-2.0m",swell:"1.6m@10s SW",wind:"25 kph SE",wt:"offshore"},
+          pm:{score:2,surf:"1.5m",swell:"holding",wind:"30 kph SE",wt:"offshore"},
+          note:"SE offshore but VERY gusty. Kiteboarders everywhere." },
+        { name:"Glen Beach", am:{score:2,surf:"1.0m",swell:"1.0m@10s SW",wind:"15 kph SE",wt:"cross"}, note:"Some shelter. Brief window." },
+        { name:"Muizenberg", am:{score:1,surf:"1.0m",swell:"1.0m@10s",wind:"25 kph SE",wt:"onshore"}, note:"Destroyed." },
+        { name:"Kalk Bay Reef", am:{score:1,surf:"1.0m",swell:"1.0m@10s",wind:"25 kph SE",wt:"onshore"}, note:"Blown out." },
+        { name:"Long Beach", am:{score:1,surf:"1.5m",swell:"big",wind:"25 kph SE",wt:"cross"}, note:"Too windy." },
+        { name:"Outer Kom", am:{score:1,surf:"1.2m",swell:"1.2m@10s",wind:"20 kph SE",wt:"cross"}, note:"Blown." },
+        { name:"Llandudno", am:{score:1,surf:"1.2m",swell:"big",wind:"20 kph SE",wt:"cross"}, note:"Blown." },
+        { name:"Dunes (Noordhoek)", am:{score:1,surf:"1.5m",swell:"big",wind:"25 kph SE",wt:"cross"}, note:"Sandstorm." },
+        { name:"Scarborough", am:{score:1,surf:"1.2m",swell:"big",wind:"20 kph SE",wt:"cross"}, note:"Blown." },
+        { name:"Misty Cliffs", am:{score:1,surf:"1.2m",swell:"big",wind:"20 kph SE",wt:"cross"}, note:"Dangerous." }
+      ]
+    },
+    fri27: {
+      label:"Fri 27 · ☀️ 23°C · ⭐⭐ GLASS! Ultra-light wind · Swell 1-1.5m",
+      conditions:"⭐⭐ BEST DAY! Ultra-light wind everywhere. Every spot works! Kalk Bay Reef perfection—walk from home. Dawn = GLASS.",
+      spots: [
+        { name:"Kalk Bay Reef",
+          am:{score:5,surf:"1.0-1.5m",swell:"1.2m@9s SW",wind:"2 kph calm",wt:"light"},
+          pm:{score:3,surf:"1.0m",swell:"dropping",wind:"8 kph SE",wt:"onshore"},
+          note:"🔥 GLASS on the reef! Perfect rights. 📍 HOME BREAK—walk there!" },
+        { name:"Muizenberg",
+          am:{score:4,surf:"0.8-1.2m",swell:"1.0m@9s SW",wind:"2 kph calm",wt:"light"},
+          pm:{score:3,surf:"0.8-1.0m",swell:"dropping",wind:"8 kph SE",wt:"onshore"},
+          note:"Dawn glass! Mellow perfection. 📍 10min from Kalk Bay." },
+        { name:"Outer Kom",
+          am:{score:4,surf:"1.0-1.5m",swell:"1.2m@9s SW",wind:"3 kph calm",wt:"light"},
+          pm:{score:3,surf:"1.0-1.2m",swell:"dropping",wind:"8 kph SE",wt:"cross"},
+          note:"Glass lefts. Beautiful." },
+        { name:"Long Beach",
+          am:{score:4,surf:"1.0-1.5m",swell:"1.2m@9s SW",wind:"3 kph calm",wt:"light"},
+          pm:{score:3,surf:"1.0-1.5m",swell:"holding",wind:"8 kph SE",wt:"cross"},
+          note:"Glass beachbreak. Multiple peaks." },
+        { name:"Llandudno",
+          am:{score:4,surf:"1.0-1.5m",swell:"1.2m@9s SW",wind:"2 kph calm",wt:"light"},
+          pm:{score:3,surf:"1.0-1.2m",swell:"dropping",wind:"6 kph SE",wt:"cross"},
+          note:"Stunning dawn glass in the bay." },
+        { name:"Glen Beach",
+          am:{score:4,surf:"0.8-1.2m",swell:"1.0m@9s SW",wind:"2 kph calm",wt:"light"},
+          pm:{score:3,surf:"0.8-1.0m",swell:"dropping",wind:"6 kph SE",wt:"cross"},
+          note:"Glass reef session. Sheltered." },
+        { name:"Dunes (Noordhoek)",
+          am:{score:4,surf:"1.0-1.5m",swell:"1.2m@9s SW",wind:"3 kph calm",wt:"light"},
+          pm:{score:3,surf:"1.0-1.2m",swell:"holding",wind:"8 kph SE",wt:"cross"},
+          note:"Glass peaks. Long rides." },
+        { name:"Misty Cliffs",
+          am:{score:4,surf:"1.0-1.5m",swell:"1.2m@9s SW",wind:"3 kph calm",wt:"light"},
+          pm:{score:2,surf:"1.0m",swell:"dropping",wind:"10 kph SE",wt:"cross"},
+          note:"Glass point break. Advanced." },
+        { name:"Scarborough",
+          am:{score:4,surf:"1.0-1.5m",swell:"1.2m@9s SW",wind:"3 kph calm",wt:"light"},
+          pm:{score:2,surf:"1.0m",swell:"dropping",wind:"10 kph SE",wt:"cross"},
+          note:"Beautiful glass dawn." },
+        { name:"Big Bay",
+          am:{score:3,surf:"0.8-1.0m",swell:"0.8m@9s SW",wind:"3 kph calm",wt:"light"},
+          pm:{score:3,surf:"0.8-1.0m",swell:"holding",wind:"8 kph SE",wt:"offshore"},
+          note:"Smaller here but clean all day. SE offshore." }
+      ]
+    },
+    sat28: {
+      label:"Sat 28 · 🌧️ 20°C · NW Front arriving · Swell building 1.5m+",
+      conditions:"Cold front! NW = OFFSHORE for False Bay! Muizenberg & Kalk Bay clean with building swell. Atlantic destroyed. Rain & cold.",
+      spots: [
+        { name:"Muizenberg",
+          am:{score:4,surf:"1.2-1.8m",swell:"1.5m@10s SW",wind:"12 kph NW",wt:"offshore"},
+          pm:{score:2,surf:"1.5-2.0m",swell:"building",wind:"22 kph NW",wt:"offshore"},
+          note:"⭐ NW OFFSHORE! Building swell. Best 7-11am. 📍 10min." },
+        { name:"Kalk Bay Reef",
+          am:{score:4,surf:"1.2-1.8m",swell:"1.5m@10s SW",wind:"10 kph N",wt:"offshore"},
+          pm:{score:2,surf:"1.5-2.0m",swell:"building",wind:"20 kph NW",wt:"offshore"},
+          note:"⭐ N/NW OFFSHORE! Reef firing! 📍 Home break." },
+        { name:"Scarborough",
+          am:{score:2,surf:"1.5m",swell:"1.5m@10s SW",wind:"12 kph NW",wt:"onshore"},
+          note:"NW onshore. Rideable early." },
+        { name:"Misty Cliffs",
+          am:{score:2,surf:"1.5m",swell:"1.5m@10s SW",wind:"12 kph NW",wt:"onshore"},
+          note:"NW onshore. Dicey." },
+        { name:"Long Beach", am:{score:1,surf:"1.5-2.0m",swell:"big",wind:"15 kph NW",wt:"onshore"}, note:"NW onshore." },
+        { name:"Outer Kom", am:{score:1,surf:"1.5m",swell:"big",wind:"15 kph NW",wt:"cross"}, note:"NW ruins the lefts." },
+        { name:"Dunes (Noordhoek)", am:{score:1,surf:"1.5m",swell:"big",wind:"15 kph NW",wt:"onshore"}, note:"Onshore mess." },
+        { name:"Llandudno", am:{score:1,surf:"1.5m",swell:"big",wind:"15 kph NW",wt:"onshore"}, note:"NW straight in." },
+        { name:"Glen Beach", am:{score:1,surf:"1.2m",swell:"big",wind:"15 kph NW",wt:"onshore"}, note:"NW onshore." },
+        { name:"Big Bay", am:{score:1,surf:"1.2m",swell:"big",wind:"18 kph NW",wt:"onshore"}, note:"NW onshore. Skip." }
+      ]
+    },
+    sun29: {
+      label:"Sun 29 · ⛅ 18°C · Post-front · ⭐⭐ SW swell 2-2.5m! NW clearing",
+      conditions:"⭐⭐ EPIC SWELL! Post-front 2-2.5m SW + NW offshore at False Bay. Muizenberg & Kalk Bay PUMPING! Biggest of the week. Cold: 18°C air, bring a 4/3.",
+      spots: [
+        { name:"Muizenberg",
+          am:{score:5,surf:"2.0-2.5m",swell:"2.2m@12s SW",wind:"8 kph NW",wt:"offshore"},
+          pm:{score:2,surf:"2.0m",swell:"holding",wind:"12 kph S",wt:"onshore"},
+          note:"🔥 EPIC! Biggest swell + NW offshore. Overhead+ sets wall-to-wall. 📍 10min." },
+        { name:"Kalk Bay Reef",
+          am:{score:5,surf:"2.0-2.5m",swell:"2.2m@12s SW",wind:"6 kph N",wt:"offshore"},
+          pm:{score:2,surf:"2.0m",swell:"holding",wind:"10 kph S",wt:"onshore"},
+          note:"🔥 MASSIVE reef rights! N offshore. Best session of the trip! 📍 Home break!" },
+        { name:"Misty Cliffs",
+          am:{score:3,surf:"2.0-2.5m",swell:"2.2m@12s SW",wind:"8 kph W",wt:"onshore"},
+          pm:{score:1,surf:"2.0m",swell:"big",wind:"12 kph SW",wt:"onshore"},
+          note:"Big point break! W onshore. Advanced only." },
+        { name:"Scarborough",
+          am:{score:3,surf:"2.0-2.5m",swell:"2.2m@12s SW",wind:"8 kph W",wt:"onshore"},
+          pm:{score:2,surf:"2.0m",swell:"holding",wind:"10 kph SW",wt:"onshore"},
+          note:"Big W onshore. Powerful." },
+        { name:"Big Bay",
+          am:{score:2,surf:"1.5m",swell:"1.5m@12s SW",wind:"10 kph NW",wt:"onshore"},
+          pm:{score:3,surf:"1.5m",swell:"holding",wind:"10 kph S",wt:"cross"},
+          note:"NW onshore AM. S cross-offshore by PM! Late session option." },
+        { name:"Long Beach",
+          am:{score:2,surf:"2.0-2.5m",swell:"2.2m@12s SW",wind:"10 kph NW",wt:"onshore"},
+          note:"Huge & messy. NW onshore. Experienced only." },
+        { name:"Outer Kom",
+          am:{score:2,surf:"2.0m",swell:"2.0m@12s SW",wind:"8 kph NW",wt:"cross"},
+          note:"NW cross. Too big for clean lineup." },
+        { name:"Dunes (Noordhoek)",
+          am:{score:2,surf:"2.0-2.5m",swell:"big",wind:"10 kph NW",wt:"onshore"},
+          note:"Huge & messy." },
+        { name:"Llandudno",
+          am:{score:2,surf:"2.0m",swell:"big",wind:"8 kph NW",wt:"onshore"},
+          note:"NW into the bay. Messy." },
+        { name:"Glen Beach",
+          am:{score:2,surf:"1.5m",swell:"1.5m@12s SW",wind:"8 kph NW",wt:"onshore"},
+          note:"NW onshore." }
+      ]
+    }
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+// ENGINE
+// ═══════════════════════════════════════════════════════════
+const REGIONS = { gardenRoute: GR, capeTown: CT };
+let activeRegion = 'gardenRoute';
+let R = GR;
+let currentDay = null;
+let userLoc = null;
+let sortMode = 'score';
+let map, mapTiles, markers = {}, polyline;
+
+const scoreColor = s => ({5:'#10b981',4:'#3b82f6',3:'#f59e0b',2:'#f97316',1:'#ef4444'}[s]||'#475569');
+
+function haversine(lat1,lon1,lat2,lon2) {
+  const R2=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R2*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function estDrive(km) {
+  const m=Math.round(km/55*60*1.3);
+  if(m<5)return"<5min"; if(m<60)return m+"min";
+  const h=Math.floor(m/60),r=m%60; return r>0?h+"hr"+String(r).padStart(2,'0'):h+"hr";
+}
+function dirName(d){const n=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];return n[Math.round(d/22.5)%16];}
+
+function scorePill(s) {
+  const labels={5:'EPIC',4:'GOOD',3:'FAIR',2:'MEH',1:'SKIP'};
+  return `<span class="score-pill score-${s}">${s}/5 ${labels[s]}</span>`;
+}
+function windBadge(wt) {
+  const l={offshore:'OFFSHORE',cross:'CROSS',onshore:'ONSHORE',light:'CALM'};
+  const c=wt==='offshore'||wt==='light'?'wind-offshore':wt==='cross'?'wind-cross':'wind-onshore';
+  if(wt==='light')return `<span class="wind-dir wind-light">${l[wt]}</span>`;
+  return `<span class="wind-dir ${c}">${l[wt]}</span>`;
+}
+
+// ── Build map ──
+map = L.map('map',{zoomControl:true}).setView(GR.mapCenter, GR.mapZoom);
+mapTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  attribution:'&copy; OSM &copy; CARTO', maxZoom:18
+}).addTo(map);
+
+function buildMap() {
+  Object.values(markers).forEach(m=>map.removeLayer(m));
+  markers={};
+  if(polyline)map.removeLayer(polyline);
+  map.setView(R.mapCenter, R.mapZoom);
+  R.spots.forEach(s=>{
+    const m=L.circleMarker([s.lat,s.lng],{radius:7,fillColor:'#3b82f6',color:'#fff',weight:1.5,fillOpacity:0.8}).addTo(map);
+    let p=`<div style="min-width:220px;font-size:12px;font-family:Inter,sans-serif"><b>${s.name}</b><br><small style="color:#94a3b8">${s.type}</small><br>Offshore: ${s.offshore} · Swell: ${s.swell}<br>🌡️ Sea: ${s.seaTemp}<hr style="border-color:#333;margin:4px 0">`;
+    if(s.surfline)p+=`<a href="${s.surfline}" target="_blank" style="color:#3b82f6">📊 Surfline</a><br>`;
+    else p+=`<em style="color:#f97316">⚠️ No Surfline</em><br>`;
+    if(s.stormrider)p+=`<a href="${s.stormrider}" target="_blank" style="color:#3b82f6">🗺️ StormRider</a><br>`;
+    if(s.windyApp)p+=`<a href="${s.windyApp}" target="_blank" style="color:#10b981">🌬️ Windy.app</a><br>`;
+    p+=`<small style="color:#666">${s.lat}, ${s.lng}</small></div>`;
+    m.bindPopup(p);
+    markers[s.name]=m;
+  });
+  polyline=L.polyline(R.spots.map(s=>[s.lat,s.lng]),{color:'#1e3a5f',weight:1.5,dashArray:'5,5',opacity:0.4}).addTo(map);
+}
+
+// ── Render weather cards ──
+function renderWeather() {
+  const bar=document.getElementById('weather-bar');
+  bar.innerHTML=R.weather.map((w,i)=>`
+    <div class="weather-card${i===0?' active':''}" onclick="selectWeatherDay(${i})">
+      <div class="wc-day">${w.day}</div><div class="wc-icon">${w.icon}</div>
+      <div class="wc-temp">${w.temp} · ${w.desc}</div>
+      <div class="wc-detail">${w.detail}</div>
+      <div class="wc-sea">🌊 ${w.sea}</div>
+      <div class="wc-tide">${w.tide}</div>
+    </div>`).join('');
+}
+function selectWeatherDay(i) {
+  document.querySelectorAll('.weather-card').forEach((c,j)=>c.classList.toggle('active',j===i));
+  showDay(R.days[i].key);
+}
+
+// ── Render day selector ──
+function renderDays() {
+  document.getElementById('day-selector').innerHTML=R.days.map((d,i)=>
+    `<button class="day-btn${i===0?' active':''}" data-day="${d.key}" onclick="showDay('${d.key}')">${d.label}<span class="sub">${d.sub}</span></button>`
+  ).join('');
+}
+
+// ── Render overview ──
+function renderOverview() {
+  document.getElementById('overview').innerHTML=`<div class="overview"><h2>📋 Overview — ${R.title.replace(/<[^>]+>/g,'')}</h2><p>${R.overview}</p></div>`;
+}
+
+// ── Render location selector ──
+function renderLocSelect() {
+  const sel=document.getElementById('loc-select');
+  sel.innerHTML=Object.entries(R.locPresets).map(([k,v])=>`<option value="${k}"${k===R.homeLoc?' selected':''}>📍 ${v.name}</option>`).join('');
+  userLoc={...R.locPresets[R.homeLoc]};
+}
+
+// ── Render footer ──
+function renderFooter() {
+  document.getElementById('footer').innerHTML=`<strong>Sources:</strong>
+    <a href="https://www.surfline.com" target="_blank">Surfline</a> ·
+    <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> ·
+    <a href="https://marine-api.open-meteo.com" target="_blank">Marine API</a> ·
+    <a href="https://windy.app" target="_blank">Windy.app</a> ·
+    <a href="https://www.stormrider.surf" target="_blank">Stormrider</a><br>
+    ⚠️ Surfline over-reports wind. Open-Meteo at exact GPS generally more reliable.<br>
+    🌊 Tides approximate (${activeRegion==='gardenRoute'?'Knysna':'Simon\'s Town'} reference).`;
+}
+
+// ── Switch Region ──
+function switchRegion(region) {
+  activeRegion=region;
+  R=REGIONS[region];
+  document.querySelectorAll('.region-tab').forEach(t=>t.classList.toggle('active',t.dataset.region===region));
+  document.getElementById('header-title').innerHTML=R.title;
+  renderLocSelect();
+  renderWeather();
+  renderDays();
+  renderOverview();
+  renderFooter();
+  buildMap();
+  currentDay=R.days[0].key;
+  showDay(currentDay);
+  updateSurfNow();
+}
+
+// ── Show Day ──
+function showDay(day) {
+  currentDay=day;
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('active',b.dataset.day===day));
+  // Also sync weather cards
+  const dayIdx=R.days.findIndex(d=>d.key===day);
+  document.querySelectorAll('.weather-card').forEach((c,i)=>c.classList.toggle('active',i===dayIdx));
+
+  const data=R.dayData[day];
+  if(!data)return;
+  const container=document.getElementById('spots-container');
+  let spotsList=[...data.spots];
+
+  if(sortMode==='distance'){
+    spotsList.sort((a,b)=>{
+      const sa=R.spots.find(x=>x.name===a.name), sb=R.spots.find(x=>x.name===b.name);
+      if(!sa||!sb)return 0;
+      return haversine(userLoc.lat,userLoc.lng,sa.lat,sa.lng)-haversine(userLoc.lat,userLoc.lng,sb.lat,sb.lng);
+    });
+  }
+
+  // Update map markers
+  spotsList.forEach(s=>{
+    if(markers[s.name]){
+      const best=Math.max(s.am?s.am.score:0,s.pm?s.pm.score:0);
+      markers[s.name].setStyle({fillColor:scoreColor(best),radius:best>=5?13:best>=4?9:best>=3?7:5});
+    }
+  });
+
+  // Tide info
+  const tides=R.tideData[day]||[];
+  const tideStr=tides.map(t=>`${t.type==='H'?'▲':'▼'}${t.time} (${t.height}m)`).join(' · ');
+
+  let html=`<p class="day-conditions">${data.conditions}<br><span style="color:var(--blue);font-size:0.85em">🌊 Tides: ${tideStr}</span></p><div class="spots-list">`;
+
+  spotsList.forEach((s,i)=>{
+    const best=Math.max(s.am?s.am.score:0,s.pm?s.pm.score:0);
+    const rc=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+    const rn=i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+    const sp=R.spots.find(x=>x.name===s.name);
+    let distInfo='', navLink='';
+    if(sp){
+      const d=haversine(userLoc.lat,userLoc.lng,sp.lat,sp.lng);
+      distInfo=`<span class="tag tag-dist">📍 ${Math.round(d)}km ~${estDrive(d)}</span>`;
+      navLink=`<a href="https://www.google.com/maps/dir/?api=1&destination=${sp.lat},${sp.lng}&travelmode=driving" target="_blank" class="nav-link">🧭 Navigate</a>`;
+    }
+    const tp=R.tidePrefs[s.name];
+    const tideNote=tp?`<span class="tag tag-tide">🌊 ${tp}</span>`:'';
+
+    let src='<div class="sources">';
+    if(sp&&sp.surfline)src+=`<a href="${sp.surfline}" target="_blank">📊 Surfline</a>`;
+    else src+='<span class="no-surfline">⚠️ No Surfline</span> ';
+    if(sp&&sp.stormrider)src+=`<a href="${sp.stormrider}" target="_blank">🗺️ Stormrider</a>`;
+    if(sp&&sp.windyApp)src+=`<a href="${sp.windyApp}" target="_blank">🌬️ Windy</a>`;
+    src+=navLink+'</div>';
+
+    html+=`<div class="spot-card ${rc}">
+      <div class="spot-header">
+        <span class="spot-rank ${rn}">#${i+1}</span>
+        <div style="flex:1">
+          <span class="spot-name">${s.name}</span>
+          ${sp?`<span class="tag tag-sea">🌡️${sp.seaTemp}</span>`:''}
+          ${distInfo}
+          <div class="spot-type">${sp?sp.type+' · Offshore: '+sp.offshore:''}${tideNote?'<br>'+tideNote:''}</div>
+        </div>
+      </div>
+      <div class="sessions">`;
+
+    if(s.am){
+      html+=`<div class="session">
+        <div class="session-label"><span>☀️ MORNING</span>${scorePill(s.am.score)}</div>
+        <div class="sg-grid">
+          <div class="sg-item"><div class="sg-label">Surf</div><div class="sg-val">${s.am.surf}</div></div>
+          <div class="sg-item"><div class="sg-label">Swell</div><div class="sg-val" style="font-size:0.78em">${s.am.swell}</div></div>
+          <div class="sg-item"><div class="sg-label">Wind ${windBadge(s.am.wt)}</div><div class="sg-val" style="font-size:0.78em">${s.am.wind}</div></div>
+        </div></div>`;
+    }
+    if(s.pm){
+      html+=`<div class="session">
+        <div class="session-label"><span>🌅 AFTERNOON</span>${scorePill(s.pm.score)}</div>
+        <div class="sg-grid">
+          <div class="sg-item"><div class="sg-label">Surf</div><div class="sg-val">${s.pm.surf}</div></div>
+          <div class="sg-item"><div class="sg-label">Swell</div><div class="sg-val" style="font-size:0.78em">${s.pm.swell}</div></div>
+          <div class="sg-item"><div class="sg-label">Wind ${windBadge(s.pm.wt)}</div><div class="sg-val" style="font-size:0.78em">${s.pm.wind}</div></div>
+        </div></div>`;
+    }
+    html+=`</div><div class="note">${s.note}</div>${src}</div>`;
+  });
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+// ── Location ──
+function getLocation() {
+  const btn=document.getElementById('loc-btn');
+  if(!navigator.geolocation){alert('GPS not available');return;}
+  btn.textContent='⏳ GPS...';
+  navigator.geolocation.getCurrentPosition(
+    pos=>{userLoc={lat:pos.coords.latitude,lng:pos.coords.longitude,name:"GPS"};btn.textContent=`📍 ${userLoc.lat.toFixed(3)},${userLoc.lng.toFixed(3)}`;showDay(currentDay);updateSurfNow();},
+    err=>{btn.textContent='📍 GPS';alert('GPS: '+err.message);},
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+function handleLocSelect(val) {
+  if(!val||!R.locPresets[val])return;
+  userLoc={...R.locPresets[val]};
+  document.getElementById('loc-btn').textContent='📍 GPS';
+  showDay(currentDay); updateSurfNow();
+}
+function toggleSort() {
+  const btn=document.getElementById('sort-toggle');
+  sortMode=sortMode==='score'?'distance':'score';
+  btn.textContent=sortMode==='score'?'Sort: Score ⭐':'Sort: Nearest 📍';
+  btn.classList.toggle('active',sortMode==='distance');
+  showDay(currentDay);
+}
+
+// ── Refresh Wind ──
+async function refreshWind() {
+  const btn=document.getElementById('refresh-btn');
+  btn.textContent='⏳ Fetching...'; btn.disabled=true;
+  const keySpots=R.spots.slice(0,4);
+  try {
+    const results=await Promise.all(keySpots.map(async s=>{
+      const url=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lng}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=Africa/Johannesburg`;
+      const r=await fetch(url); const d=await r.json();
+      return {name:s.name,wind:d.current.wind_speed_10m,dir:d.current.wind_direction_10m,gust:d.current.wind_gusts_10m,time:d.current.time};
+    }));
+    const old=document.getElementById('wind-toast'); if(old)old.remove();
+    let html=`<div class="toast" id="wind-toast"><button class="toast-close" onclick="this.parentElement.remove()">✕</button><h4>🌬️ Live Wind Now</h4>`;
+    results.forEach(r=>{
+      const sp=R.spots.find(s=>s.name===r.name);
+      html+=`<div class="toast-item"><b>${r.name}</b>: ${r.wind} kph ${dirName(r.dir)} (${r.gust}g)${sp?' · Offshore: '+sp.offshore:''}</div>`;
+    });
+    html+=`<div style="margin-top:8px;font-size:0.7em;color:var(--text3)">Open-Meteo · ${results[0]?.time?.replace('T',' ')}</div></div>`;
+    document.body.insertAdjacentHTML('beforeend',html);
+    setTimeout(()=>document.getElementById('wind-toast')?.remove(),15000);
+    document.getElementById('last-updated').textContent=`✓ ${new Date().toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})}`;
+  } catch(e) { document.getElementById('last-updated').textContent='❌ Error'; }
+  btn.textContent='🔄 Refresh'; btn.disabled=false;
+}
+
+// ── Surf Now ──
+function updateSurfNow() {
+  const now=new Date(), hour=now.getHours();
+  const dateStr=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  // Map dates to day keys
+  const dateMap={};
+  if(activeRegion==='gardenRoute'){
+    Object.assign(dateMap,{'2026-03-18':'today_pm','2026-03-19':'thu','2026-03-20':'fri','2026-03-21':'sat'});
+  } else {
+    Object.assign(dateMap,{'2026-03-23':'mon23','2026-03-24':'tue24','2026-03-25':'wed25','2026-03-26':'thu26','2026-03-27':'fri27','2026-03-28':'sat28','2026-03-29':'sun29'});
+  }
+  const dayKey=dateMap[dateStr]||R.days[0].key;
+  const session=(dayKey==='today_pm')?'pm':(hour<11?'am':'pm');
+  const sessionLabel=session==='am'?'☀️ Morning':'🌅 Afternoon';
+  const data=R.dayData[dayKey];
+  if(!data){document.getElementById('surf-now').innerHTML='';return;}
+
+  let best=null, bestScore=0;
+  data.spots.forEach(s=>{
+    const sc=session==='am'?(s.am?.score||0):(s.pm?.score||0);
+    if(sc>bestScore){bestScore=sc;best=s;}
+    else if(sc===bestScore&&best){
+      const sp1=R.spots.find(x=>x.name===best.name),sp2=R.spots.find(x=>x.name===s.name);
+      if(sp1&&sp2&&haversine(userLoc.lat,userLoc.lng,sp2.lat,sp2.lng)<haversine(userLoc.lat,userLoc.lng,sp1.lat,sp1.lng))best=s;
+    }
+  });
+  if(!best){document.getElementById('surf-now').innerHTML='';return;}
+
+  const sp=R.spots.find(x=>x.name===best.name);
+  const dist=sp?Math.round(haversine(userLoc.lat,userLoc.lng,sp.lat,sp.lng)):0;
+  const drive=sp?estDrive(dist):'';
+  const sData=session==='am'?best.am:best.pm;
+  const wB=sData?windBadge(sData.wt):'';
+  const navUrl=sp?`https://www.google.com/maps/dir/?api=1&destination=${sp.lat},${sp.lng}&travelmode=driving`:'#';
+
+  const tides=R.tideData[dayKey]||[];
+  const nowMins=hour*60+now.getMinutes();
+  let nextTide=tides.find(t=>{const[h,m]=t.time.split(':').map(Number);return h*60+m>nowMins;})||tides[0];
+  const tideStr=nextTide?`Next: ${nextTide.type==='H'?'▲High':'▼Low'} ${nextTide.time} (${nextTide.height}m)`:'';
+
+  document.getElementById('surf-now').innerHTML=`<div class="surf-now"><div class="surf-now-inner">
+    <div class="sn-badge">🏄 SURF NOW</div>
+    <div class="sn-detail">
+      <div class="sn-spot">${best.name} · ${scorePill(bestScore)}</div>
+      <div class="sn-info">${sessionLabel} · ${sData?.surf||'?'} · ${wB}<br>
+        📍 ~${dist}km (~${drive}) from ${userLoc.name} · ${tideStr}${R.tidePrefs[best.name]?' · 🌊 '+R.tidePrefs[best.name]:''}</div>
+    </div>
+    <a href="${navUrl}" target="_blank" class="sn-nav">🧭 Navigate →</a>
+  </div></div>`;
+}
+
+// ── INIT ──
+switchRegion('gardenRoute');
+</script>
+</body>
+</html>
