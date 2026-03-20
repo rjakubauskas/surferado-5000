@@ -231,17 +231,19 @@ const GR = {
     plett: { lat:-34.053, lng:23.372, name:"Plettenberg Bay" },
     jbay: { lat:-34.049, lng:24.926, name:"Jeffreys Bay" }
   },
-  homeLoc: 'plett',
+  homeLoc: 'plett', // Plettenberg Bay base
   weather: [
     { day:"Wed 18", icon:"⛈️", temp:"22-24°C", desc:"Thunderstorms", sea:"22°C", detail:"⚠️ 7-15mm rain", tide:"▲11:02 (1.9m) · ▼17:18" },
     { day:"Thu 19", icon:"🌦️", temp:"22-33°C", desc:"Light rain", sea:"21-22°C", detail:"J-Bay 33°C!", tide:"▼05:35 · ▲11:48 (1.8m)" },
     { day:"Fri 20", icon:"☁️", temp:"18-26°C", desc:"Cloudy", sea:"21°C", detail:"All dry", tide:"▲00:18 · ▼06:25 · ▲12:38" },
     { day:"Sat 21", icon:"☀️", temp:"15-23°C", desc:"Clear! ⭐", sea:"21°C", detail:"UV 7+ Sunscreen!", tide:"▲01:10 · ▼07:20 · ▲13:35" }
   ],
-  overview: `<strong>Today PM (Wed 18):</strong> ⛈️ Thunderstorms. Buffels Bay best (3/5). Mossel Bay onshore—skip.<br>
-<strong>⭐ Thu 19 dawn:</strong> THE session! Buffels Bay 2.1m GLASS (1.4 kph!). Vic Bay 1.96m. J-Bay HOT 33°C.<br>
-<strong>⚠️ Fri 20:</strong> Strong wind. Buffels Bay 2.5 kph dawn = only calm spot. J-Bay 20 kph W (44g!).<br>
-<strong>⭐⭐ Sat 21 = BEST DAY!</strong> ☀️ Clear! Vic Bay 2.06m + NW offshore. Buffels 2.22m biggest. <strong>Mossel Bay 1.9m + W offshore = EPIC!</strong>`,
+  overviewLines: {
+    today_pm: `<strong>Wed 18 PM:</strong> ⛈️ Thunderstorms. Buffels Bay best (3/5). Mossel Bay onshore—skip.`,
+    thu: `<strong>⭐ Thu 19 dawn:</strong> THE session! Buffels Bay 2.1m GLASS (1.4 kph!). Vic Bay 1.96m. J-Bay HOT 33°C.`,
+    fri: `<strong>⚠️ Fri 20:</strong> Strong wind. Buffels Bay 2.5 kph dawn = only calm spot. J-Bay 20 kph W (44g!).`,
+    sat: `<strong>⭐⭐ Sat 21 = BEST DAY!</strong> ☀️ Clear! Vic Bay 2.06m + NW offshore. Buffels 2.22m biggest. <strong>Mossel Bay 1.9m + W offshore = EPIC!</strong>`
+  },
   days: [
     { key:'today_pm', label:'Today PM', sub:'Wed 18 ⛈️', date:'2026-03-18', pmOnly:true },
     { key:'thu', label:'Thu 19', sub:'⭐ Best dawn', date:'2026-03-19' },
@@ -375,9 +377,9 @@ const GR = {
           pm:{score:1,surf:"~1.8m",swell:"similar",wind:"similar",wt:"cross"},
           note:"Good size, wrong wind. 45min W." },
         { name:"Diaz Beach",
-          am:{score:2,surf:"~1.8m",swell:"est.",wind:"~11 kph E",wt:"onshore"},
+          am:{score:2,surf:"~1.8m",swell:"est.",wind:"~11 kph E",wt:"cross"},
           pm:{score:1,surf:"~1.7m",swell:"dropping",wind:"~12 kph SE",wt:"onshore"},
-          note:"E cross for WNW-facing Diaz. 40min W." },
+          note:"E cross AM, SE onshore PM. 40min W." },
         { name:"Nature's Valley",
           am:{score:2,surf:"~1.0m",swell:"est.",wind:"4 kph E",wt:"cross"},
           pm:{score:1,surf:"~1.0m",swell:"holding",wind:"~12 kph SE",wt:"onshore"},
@@ -530,13 +532,15 @@ const CT = {
     { day:"Sat 28", icon:"🌧️", temp:"20°C", desc:"NW Front", sea:"15-19°C", detail:"False Bay offshore!", tide:"▼06:50 · ▲13:05 (1.2m)" },
     { day:"Sun 29", icon:"⛅", temp:"18°C", desc:"POST-FRONT ⭐⭐", sea:"15-19°C", detail:"2.5m swell! Epic!", tide:"▼07:55 · ▲14:10 (1.3m)" }
   ],
-  overview: `<strong>Mon 23:</strong> NE berg wind, flat. Skip—go to the beach 🏖️<br>
-<strong>Tue 24:</strong> Swell arrives! Big Bay fires with SE offshore. Dawn glass at False Bay then SE ruins it.<br>
-<strong>⭐ Wed 25:</strong> Big Bay EPIC! SE offshore + 2m SW swell. Rest blown out.<br>
-<strong>Thu 26:</strong> SE howling 25-30 kph. Big Bay only option (gusty). Rest day?<br>
-<strong>⭐⭐ Fri 27 = BEST DAY!</strong> GLASS everywhere! Kalk Bay Reef perfection! Every spot works.<br>
-<strong>Sat 28:</strong> NW front—offshore at Muizenberg & Kalk Bay! Building swell. Atlantic destroyed.<br>
-<strong>⭐⭐ Sun 29:</strong> Post-front 2-2.5m! <strong>Muizenberg & Kalk Bay PUMPING + NW offshore = EPIC!</strong>`,
+  overviewLines: {
+    mon23: `<strong>Mon 23:</strong> NE berg wind, flat. Skip—go to the beach 🏖️`,
+    tue24: `<strong>Tue 24:</strong> Swell arrives! Big Bay fires with SE offshore. Dawn glass at False Bay then SE ruins it.`,
+    wed25: `<strong>⭐ Wed 25:</strong> Big Bay EPIC! SE offshore + 2m SW swell. Rest blown out.`,
+    thu26: `<strong>Thu 26:</strong> SE howling 25-30 kph. Big Bay only option (gusty). Rest day?`,
+    fri27: `<strong>⭐⭐ Fri 27 = BEST DAY!</strong> GLASS everywhere! Kalk Bay Reef perfection! Every spot works.`,
+    sat28: `<strong>Sat 28:</strong> NW front—offshore at Muizenberg & Kalk Bay! Building swell. Atlantic destroyed.`,
+    sun29: `<strong>⭐⭐ Sun 29:</strong> Post-front 2-2.5m! <strong>Muizenberg & Kalk Bay PUMPING + NW offshore = EPIC!</strong>`
+  },
   days: [
     { key:'mon23', label:'Mon 23', sub:'☀️ Flat', date:'2026-03-23' },
     { key:'tue24', label:'Tue 24', sub:'Swell arrives', date:'2026-03-24' },
@@ -932,7 +936,9 @@ function renderOverview() {
     document.getElementById('overview').innerHTML=`<div class="overview"><h2>📋 ${R.title.replace(/<[^>]+>/g,'')}</h2><p style="color:var(--text3)">This forecast period has ended. All sessions are in the past.</p></div>`;
     return;
   }
-  document.getElementById('overview').innerHTML=`<div class="overview"><h2>📋 Overview — ${R.title.replace(/<[^>]+>/g,'')}</h2><p>${R.overview}</p></div>`;
+  // Build overview from only visible days' lines
+  const lines=visible.map(d=>R.overviewLines[d.key]).filter(Boolean).join('<br>');
+  document.getElementById('overview').innerHTML=`<div class="overview"><h2>📋 Overview — ${R.title.replace(/<[^>]+>/g,'')}</h2><p>${lines||'No overview available.'}</p></div>`;
 }
 
 // ── Render location selector ──
