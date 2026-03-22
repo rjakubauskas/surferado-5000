@@ -184,7 +184,7 @@ header { background:linear-gradient(180deg,rgba(15,23,42,0.95),var(--bg)); borde
 <div class="container">
   <div class="toolbar">
     <div class="tb-group">
-      <button class="tb-btn" id="refresh-btn" onclick="refreshWind()">🔄 Refresh</button>
+      <button class="tb-btn" id="refresh-btn" onclick="refreshWind()">📡 Live Update</button>
       <span class="tb-label" id="last-updated"></span>
     </div>
     <div class="tb-group">
@@ -268,9 +268,9 @@ const GR = {
     { name:"Diaz Beach", lat:-34.162, lng:22.108, type:"Beachbreak · Sand", offshore:"WNW", swell:"SE-S",
       surfline:"https://www.surfline.com/surf-report/mossel-bay/584204204e65fad6a77094ad", seaTemp:"22°C" },
     { name:"Inner Pool", lat:-34.183, lng:22.146, type:"Right reef · Rock shelves", offshore:"W", swell:"SSE-S",
-      surfline:"https://www.surfline.com/surf-report/inner-pool/584204204e65fad6a77094ab", seaTemp:"22°C" },
+      surfline:"https://www.surfline.com/surf-report/mossel-bay/584204204e65fad6a77094ad", seaTemp:"22°C" },
     { name:"Outer Pool", lat:-34.183, lng:22.146, type:"Right reef · Rock shelves", offshore:"W", swell:"SSE-S",
-      surfline:"https://www.surfline.com/surf-report/outer-pool/584204204e65fad6a77094ac",
+      surfline:"https://www.surfline.com/surf-report/mossel-bay/584204204e65fad6a77094ad",
       stormrider:"https://www.stormrider.surf/break/outer-pool", seaTemp:"22°C" },
     { name:"Victoria Bay", lat:-34.005, lng:22.549, type:"Right pointbreak · Boulders & sand", offshore:"N/NW", swell:"S-SW",
       surfline:"https://www.surfline.com/surf-report/victoria-bay/584204204e65fad6a77094ae",
@@ -606,20 +606,20 @@ const CT = {
   },
   spots: [
     { name:"Muizenberg", lat:-34.109, lng:18.471, type:"Beach break · Sand", offshore:"NNW", swell:"S-SW",
-      surfline:"https://www.surfline.com/surf-report/muizenberg/584204204e65fad6a7709492", seaTemp:"19°C" },
+      surfline:"https://www.surfline.com/surf-report/muizenberg/584204204e65fad6a77094b7", seaTemp:"19°C" },
     { name:"Kalk Bay Reef", lat:-34.130, lng:18.445, type:"Right reef · Rock shelves", offshore:"N", swell:"S-SW", seaTemp:"19°C" },
     { name:"Long Beach", lat:-34.130, lng:18.330, type:"Beach break · Sand (powerful)", offshore:"ENE", swell:"SW-W",
-      surfline:"https://www.surfline.com/surf-report/long-beach-kommetjie/584204204e65fad6a770948f", seaTemp:"15°C" },
+      surfline:"https://www.surfline.com/surf-report/long-beach/640a1bec606c4511d8a7c7c2", seaTemp:"15°C" },
     { name:"Outer Kom", lat:-34.138, lng:18.318, type:"Left reef · Rock", offshore:"NE", swell:"SW-W",
-      surfline:"https://www.surfline.com/surf-report/kommetjie/584204204e65fad6a7709490", seaTemp:"15°C" },
+      surfline:"https://www.surfline.com/surf-report/kommetjie/584204204e65fad6a77094b6", seaTemp:"15°C" },
     { name:"Scarborough", lat:-34.207, lng:18.370, type:"Beach break · Sand", offshore:"E", swell:"SW-W", seaTemp:"15°C" },
     { name:"Misty Cliffs", lat:-34.185, lng:18.363, type:"Point break · Rock", offshore:"E", swell:"SW-S", seaTemp:"15°C" },
     { name:"Dunes (Noordhoek)", lat:-34.110, lng:18.355, type:"Beach break · Sand", offshore:"ENE", swell:"SW-W", seaTemp:"15°C" },
     { name:"Llandudno", lat:-34.005, lng:18.338, type:"Beach break · Sand & granite", offshore:"E", swell:"SW-W",
-      surfline:"https://www.surfline.com/surf-report/llandudno/584204204e65fad6a770948e", seaTemp:"14°C" },
+      surfline:"https://www.surfline.com/surf-report/llandudno/604f9d394046841199fe5d9b", seaTemp:"14°C" },
     { name:"Glen Beach", lat:-33.950, lng:18.380, type:"Reef break · Rock & sand", offshore:"E", swell:"SW-W", seaTemp:"14°C" },
     { name:"Big Bay", lat:-33.798, lng:18.462, type:"Beach break · Sand", offshore:"SE", swell:"SW-W",
-      surfline:"https://www.surfline.com/surf-report/big-bay/584204204e65fad6a7709491", seaTemp:"14°C" }
+      surfline:"https://www.surfline.com/surf-report/big-bay/640a1bdd4eb37561948b7f01", seaTemp:"14°C" }
   ],
   dayData: {
     sun22: {
@@ -1046,27 +1046,27 @@ const BC = {
   },
   spots: [
     { name:"Les Cavaliers", lat:43.497, lng:-1.533, type:"Beach break · Sand (powerful)", offshore:"SE", swell:"NW-W",
-      surfline:"https://www.surfline.com/surf-report/les-cavaliers/584204204e65fad6a7708fc1", seaTemp:"13°C" },
+      surfline:"https://www.surfline.com/surf-report/les-cavaliers/5842041f4e65fad6a7708c8f", seaTemp:"13°C" },
     { name:"Grande Plage", lat:43.484, lng:-1.558, type:"Beach break · Sand", offshore:"SE", swell:"NW-W",
-      surfline:"https://www.surfline.com/surf-report/grande-plage/584204204e65fad6a7708fc3", seaTemp:"13°C" },
+      surfline:"https://www.surfline.com/surf-report/biarritz/5842041f4e65fad6a7708bca", seaTemp:"13°C" },
     { name:"Côte des Basques", lat:43.477, lng:-1.564, type:"Beach/reef break · Sand & rock", offshore:"E", swell:"NW-W",
-      surfline:"https://www.surfline.com/surf-report/cote-des-basques/584204204e65fad6a7708fc4",
+      surfline:"https://www.surfline.com/surf-report/la-cote-des-basques/5842041f4e65fad6a7708bcf",
       stormrider:"https://www.stormrider.surf/break/cote-des-basques", seaTemp:"13°C" },
     { name:"Marbella", lat:43.468, lng:-1.568, type:"Beach break · Sand", offshore:"SE", swell:"NW-W", seaTemp:"13°C" },
     { name:"Bidart Centre", lat:43.443, lng:-1.589, type:"Beach break · Sand & reef", offshore:"SE", swell:"NW-W",
-      surfline:"https://www.surfline.com/surf-report/bidart/584204204e65fad6a7708fc6", seaTemp:"13°C" },
+      surfline:"https://www.surfline.com/surf-report/bidart/584204204e65fad6a7708ffa", seaTemp:"13°C" },
     { name:"Parlementia", lat:43.422, lng:-1.601, type:"Reef break · Rock (big wave)", offshore:"SE", swell:"NW-W",
-      surfline:"https://www.surfline.com/surf-report/parlementia/584204204e65fad6a7708fc7",
+      surfline:"https://www.surfline.com/surf-report/guethary-parlementia/584204204e65fad6a7708ffd",
       stormrider:"https://www.stormrider.surf/break/parlementia", seaTemp:"13°C" },
     { name:"Cenitz", lat:43.415, lng:-1.598, type:"Cove · Sand & rock (mellow)", offshore:"SE", swell:"NW-W",
       stormrider:"https://www.stormrider.surf/break/cenitz", seaTemp:"13°C" },
     { name:"Lafitenia", lat:43.405, lng:-1.610, type:"Right pointbreak · Rock & reef", offshore:"SE", swell:"NW-W",
-      surfline:"https://www.surfline.com/surf-report/lafitenia/584204204e65fad6a7708fc8",
+      surfline:"https://www.surfline.com/surf-report/lafitenia/5842041f4e65fad6a7708c8c",
       stormrider:"https://www.stormrider.surf/break/lafitenia", seaTemp:"13°C" },
     { name:"Erromardie", lat:43.393, lng:-1.630, type:"Beach break · Sand", offshore:"SE", swell:"NW-W",
-      surfline:"https://www.surfline.com/surf-report/erromardie/584204204e65fad6a7708fc9", seaTemp:"13°C" },
+      surfline:"https://www.surfline.com/surf-report/erromardie/584204204e65fad6a7708fff", seaTemp:"13°C" },
     { name:"Hendaye", lat:43.370, lng:-1.765, type:"Beach break · Sand (gentle)", offshore:"S-SE", swell:"NW-W",
-      surfline:"https://www.surfline.com/surf-report/hendaye/584204204e65fad6a7708fca",
+      surfline:"https://www.surfline.com/surf-report/hendaye/584204204e65fad6a7709001",
       stormrider:"https://www.stormrider.surf/break/hendaye", seaTemp:"13°C" }
   ],
   dayData: {
@@ -1491,13 +1491,12 @@ function renderLocSelect() {
 
 // ── Render footer ──
 function renderFooter() {
-  document.getElementById('footer').innerHTML=`<strong>Sources:</strong>
-    <a href="https://www.surfline.com" target="_blank">Surfline</a> ·
-    <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> ·
-    <a href="https://marine-api.open-meteo.com" target="_blank">Marine API</a> ·
-    <a href="https://windy.app" target="_blank">Windy.app</a> ·
-    <a href="https://www.stormrider.surf" target="_blank">Stormrider</a><br>
-    ⚠️ Surfline over-reports wind. Open-Meteo at exact GPS generally more reliable.<br>
+  document.getElementById('footer').innerHTML=`<strong>Forecast sources:</strong>
+    🌊 Waves: <a href="https://www.surfline.com" target="_blank">Surfline LOTUS</a> + <a href="https://marine-api.open-meteo.com" target="_blank">Open-Meteo Marine</a> ·
+    🌬️ Wind: <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> + <a href="https://windy.app" target="_blank">Windy.app</a> ·
+    📊 Spot info: <a href="https://www.stormrider.surf" target="_blank">Stormrider</a><br>
+    📡 <strong>Live Update</strong> pulls real-time data from Surfline API (waves + wind) and Open-Meteo (wind at GPS).<br>
+    ⚠️ Surfline tends to over-report wind. Open-Meteo at exact GPS is generally more reliable.<br>
     🌊 Tides approximate (${activeRegion==='gardenRoute'?'Knysna':activeRegion==='capeTown'?'Simon\'s Town':'Saint-Jean-de-Luz'} reference).`;
 }
 
@@ -1637,29 +1636,68 @@ function toggleSort() {
   showDay(currentDay);
 }
 
-// ── Refresh Wind ──
+// ── Extract Surfline spot ID from URL ──
+function getSurflineId(spot) {
+  if (!spot.surfline) return null;
+  const m = spot.surfline.match(/\/([a-f0-9]{24})$/);
+  return m ? m[1] : null;
+}
+
+// ── Refresh Live: Open-Meteo wind + Surfline wave & wind ──
 async function refreshWind() {
   const btn=document.getElementById('refresh-btn');
   btn.textContent='⏳ Fetching...'; btn.disabled=true;
-  const keySpots=R.spots.slice(0,4);
+  const keySpots=R.spots.slice(0,6); // top 6 spots
   try {
+    // Parallel: Open-Meteo wind + Surfline wave/wind for each spot
     const results=await Promise.all(keySpots.map(async s=>{
-      const tz=activeRegion==='basque'?'Europe/Paris':'Africa/Johannesburg';
-      const url=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lng}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=${tz}`;
-      const r=await fetch(url); const d=await r.json();
-      return {name:s.name,wind:d.current.wind_speed_10m,dir:d.current.wind_direction_10m,gust:d.current.wind_gusts_10m,time:d.current.time};
+      const result = {name:s.name, offshore:s.offshore};
+      // Open-Meteo wind
+      try {
+        const tz=activeRegion==='basque'?'Europe/Paris':'Africa/Johannesburg';
+        const url=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lng}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=${tz}`;
+        const r=await fetch(url); const d=await r.json();
+        result.om={wind:d.current.wind_speed_10m,dir:d.current.wind_direction_10m,gust:d.current.wind_gusts_10m,time:d.current.time};
+      } catch(e){ result.om=null; }
+      // Surfline wave + wind
+      const slId = getSurflineId(s);
+      if(slId){
+        try {
+          const [waveR,windR] = await Promise.all([
+            fetch(`https://services.surfline.com/kbyg/spots/forecasts/wave?spotId=${slId}&days=1&intervalHours=3`).then(r=>r.json()),
+            fetch(`https://services.surfline.com/kbyg/spots/forecasts/wind?spotId=${slId}&days=1&intervalHours=3`).then(r=>r.json())
+          ]);
+          // Find closest forecast entry to now
+          const now=Date.now()/1000;
+          const pickClosest=(arr)=>arr?.reduce((a,b)=>Math.abs(b.timestamp-now)<Math.abs(a.timestamp-now)?b:a);
+          const wv=pickClosest(waveR?.data?.wave);
+          const wd=pickClosest(windR?.data?.wind);
+          result.sl={};
+          if(wv){result.sl.surfMin=wv.surf?.min?.toFixed(1);result.sl.surfMax=wv.surf?.max?.toFixed(1);result.sl.surfText=wv.surf?.humanRelation;
+            if(wv.swells?.[0]){result.sl.swellH=wv.swells[0].height?.toFixed(1);result.sl.swellP=wv.swells[0].period?.toFixed(0);result.sl.swellD=dirName(wv.swells[0].direction);}}
+          if(wd){result.sl.wind=wd.speed?.toFixed(1);result.sl.windDir=dirName(wd.direction);result.sl.gust=wd.gust?.toFixed(1);result.sl.windType=wd.directionType;}
+        } catch(e){ result.sl=null; }
+      } else { result.sl=null; }
+      return result;
     }));
     const old=document.getElementById('wind-toast'); if(old)old.remove();
-    let html=`<div class="toast" id="wind-toast"><button class="toast-close" onclick="this.parentElement.remove()">✕</button><h4>🌬️ Live Wind Now</h4>`;
+    let html=`<div class="toast" id="wind-toast" style="max-width:480px;max-height:80vh;overflow-y:auto"><button class="toast-close" onclick="this.parentElement.remove()">✕</button><h4>📡 Live Conditions Now</h4>`;
     results.forEach(r=>{
-      const sp=R.spots.find(s=>s.name===r.name);
-      html+=`<div class="toast-item"><b>${r.name}</b>: ${r.wind} kph ${dirName(r.dir)} (${r.gust}g)${sp?' · Offshore: '+sp.offshore:''}</div>`;
+      html+=`<div class="toast-item" style="margin:6px 0;padding:6px 8px"><b>${r.name}</b> <span style="color:var(--text3);font-size:0.85em">offshore: ${r.offshore}</span><br>`;
+      if(r.om) html+=`<span style="color:var(--cyan);font-size:0.85em">Open-Meteo:</span> ${r.om.wind} kph ${dirName(r.om.dir)} (${r.om.gust}g)<br>`;
+      if(r.sl){
+        if(r.sl.wind) html+=`<span style="color:var(--blue);font-size:0.85em">Surfline:</span> ${r.sl.wind} kph ${r.sl.windDir} (${r.sl.gust}g) · ${r.sl.windType||''}<br>`;
+        if(r.sl.surfMin) html+=`<span style="color:var(--green);font-size:0.85em">Waves:</span> ${r.sl.surfMin}-${r.sl.surfMax}m ${r.sl.surfText||''} · ${r.sl.swellH}m@${r.sl.swellP}s ${r.sl.swellD}`;
+      }
+      if(!r.sl) html+=`<span style="color:var(--text3);font-size:0.8em">No Surfline data</span>`;
+      html+=`</div>`;
     });
-    html+=`<div style="margin-top:8px;font-size:0.7em;color:var(--text3)">Open-Meteo · ${results[0]?.time?.replace('T',' ')}</div></div>`;
+    const ts=results[0]?.om?.time?.replace('T',' ')||new Date().toLocaleTimeString();
+    html+=`<div style="margin-top:8px;font-size:0.7em;color:var(--text3)">Sources: Open-Meteo (wind) + Surfline API (waves+wind) · ${ts}</div></div>`;
     document.body.insertAdjacentHTML('beforeend',html);
-    setTimeout(()=>document.getElementById('wind-toast')?.remove(),15000);
+    setTimeout(()=>document.getElementById('wind-toast')?.remove(),30000);
     document.getElementById('last-updated').textContent=`✓ ${new Date().toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})}`;
-  } catch(e) { document.getElementById('last-updated').textContent='❌ Error'; }
+  } catch(e) { document.getElementById('last-updated').textContent='❌ Error'; console.error(e); }
   btn.textContent='🔄 Refresh'; btn.disabled=false;
 }
 
