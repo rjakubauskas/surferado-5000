@@ -1663,9 +1663,12 @@ async function refreshWind() {
       const slId = getSurflineId(s);
       if(slId){
         try {
+          // Use Vercel proxy to avoid CORS, fall back to direct for localhost
+          const base = location.hostname==='localhost'||location.hostname==='127.0.0.1'
+            ? `https://surf-theta.vercel.app` : '';
           const [waveR,windR] = await Promise.all([
-            fetch(`https://services.surfline.com/kbyg/spots/forecasts/wave?spotId=${slId}&days=1&intervalHours=3`).then(r=>r.json()),
-            fetch(`https://services.surfline.com/kbyg/spots/forecasts/wind?spotId=${slId}&days=1&intervalHours=3`).then(r=>r.json())
+            fetch(`${base}/api/surfline?type=wave&spotId=${slId}`).then(r=>r.json()),
+            fetch(`${base}/api/surfline?type=wind&spotId=${slId}`).then(r=>r.json())
           ]);
           // Find closest forecast entry to now
           const now=Date.now()/1000;
