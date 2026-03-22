@@ -173,9 +173,9 @@ header { background:linear-gradient(180deg,rgba(15,23,42,0.95),var(--bg)); borde
 <header>
   <div class="header-inner">
     <div class="region-tabs">
-      <button class="region-tab active" data-region="gardenRoute" onclick="switchRegion('gardenRoute')">🌊 Garden Route</button>
       <button class="region-tab" data-region="capeTown" onclick="switchRegion('capeTown')">🏔️ Cape Town</button>
       <button class="region-tab" data-region="basque" onclick="switchRegion('basque')">🇫🇷 Basque Country</button>
+      <button class="region-tab" data-region="gardenRoute" onclick="switchRegion('gardenRoute')" style="opacity:0.5">📦 Garden Route</button>
     </div>
     <div style="display:flex;align-items:center;gap:12px"><span style="font-size:1.1em;font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent">🏄 Surferado 5000</span><div class="header-title" id="header-title"><b>Mossel Bay → J-Bay</b> · Mar 18–21</div></div>
   </div>
@@ -222,7 +222,7 @@ header { background:linear-gradient(180deg,rgba(15,23,42,0.95),var(--bg)); borde
 // DATA: GARDEN ROUTE
 // ═══════════════════════════════════════════════════════════
 const GR = {
-  title: '<b>Mossel Bay → J-Bay</b> · Mar 18–21',
+  title: '<b>Mossel Bay → J-Bay</b> · Mar 18–21 · Base: Plettenberg Bay <span style="opacity:0.5">(archived)</span>',
   mapCenter: [-34.08, 23.5], mapZoom: 8,
   locPresets: {
     wilderness: { lat:-33.994, lng:22.578, name:"Wilderness" },
@@ -546,7 +546,7 @@ const GR = {
 // DATA: CAPE TOWN
 // ═══════════════════════════════════════════════════════════
 const CT = {
-  title: '<b>Cape Peninsula</b> · Muizenberg → Big Bay · Mar 22–29',
+  title: '<b>Cape Peninsula</b> · Muizenberg → Big Bay · Mar 22–29 · Base: Kalk Bay',
   mapCenter: [-34.05, 18.40], mapZoom: 11,
   locPresets: {
     kalkBay: { lat:-34.130, lng:18.450, name:"Kalk Bay" },
@@ -630,10 +630,6 @@ const CT = {
           am:{score:2,surf:"0.5-0.8m",swell:"0.7m@8s SW",wind:"5 kph E",wt:"cross"},
           pm:{score:2,surf:"0.5-0.8m",swell:"0.7m@8s SW",wind:"8 kph E",wt:"cross"},
           note:"Small but fun for a first paddle. 📍 10min from Kalk Bay." },
-        { name:"Kalk Bay Reef",
-          am:{score:1,surf:"0.3-0.5m",swell:"0.5m@8s SW",wind:"5 kph E",wt:"cross"},
-          pm:{score:1,surf:"0.3-0.5m",swell:"tiny",wind:"8 kph E",wt:"cross"},
-          note:"Needs more swell. Scout it for later in the week. 📍 Home break." },
         { name:"Long Beach",
           am:{score:2,surf:"0.5-0.8m",swell:"0.7m@8s SW",wind:"5 kph E",wt:"offshore"},
           pm:{score:1,surf:"0.5m",swell:"dropping",wind:"10 kph E",wt:"offshore"},
@@ -650,14 +646,18 @@ const CT = {
           am:{score:2,surf:"0.5-0.8m",swell:"0.7m@8s SW",wind:"5 kph E",wt:"offshore"},
           pm:{score:1,surf:"0.5m",swell:"dropping",wind:"8 kph E",wt:"offshore"},
           note:"E offshore! Small clean waves." },
-        { name:"Misty Cliffs",
-          am:{score:1,surf:"0.5m",swell:"small",wind:"5 kph E",wt:"offshore"},
-          pm:{score:1,surf:"0.3m",swell:"tiny",wind:"8 kph E",wt:"offshore"},
-          note:"Too small for the point." },
         { name:"Llandudno",
           am:{score:2,surf:"0.5-0.8m",swell:"0.7m@8s SW",wind:"5 kph E",wt:"offshore"},
           pm:{score:1,surf:"0.5m",swell:"dropping",wind:"8 kph E",wt:"offshore"},
           note:"E offshore. Beautiful but small." },
+        { name:"Kalk Bay Reef",
+          am:{score:1,surf:"0.3-0.5m",swell:"0.5m@8s SW",wind:"5 kph E",wt:"cross"},
+          pm:{score:1,surf:"0.3-0.5m",swell:"tiny",wind:"8 kph E",wt:"cross"},
+          note:"Needs more swell. Scout it for later in the week. 📍 Home break." },
+        { name:"Misty Cliffs",
+          am:{score:1,surf:"0.5m",swell:"small",wind:"5 kph E",wt:"offshore"},
+          pm:{score:1,surf:"0.3m",swell:"tiny",wind:"8 kph E",wt:"offshore"},
+          note:"Too small for the point." },
         { name:"Glen Beach",
           am:{score:1,surf:"0.3-0.5m",swell:"tiny",wind:"5 kph E",wt:"offshore"},
           pm:{score:1,surf:"0.3m",swell:"flat",wind:"8 kph E",wt:"offshore"},
@@ -994,7 +994,7 @@ const CT = {
 };
 
 const BC = {
-  title: '<b>Basque Coast</b> · Anglet → Hendaye · Apr 1–6',
+  title: '<b>Basque Coast</b> · Anglet → Hendaye · Apr 1–6 · Base: Guéthary',
   mapCenter: [43.44, -1.60], mapZoom: 12,
   locPresets: {
     guethary: { lat:43.422, lng:-1.601, name:"Guéthary" },
@@ -1644,7 +1644,8 @@ async function refreshWind() {
   const keySpots=R.spots.slice(0,4);
   try {
     const results=await Promise.all(keySpots.map(async s=>{
-      const url=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lng}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=Africa/Johannesburg`;
+      const tz=activeRegion==='basque'?'Europe/Paris':'Africa/Johannesburg';
+      const url=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lng}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&timezone=${tz}`;
       const r=await fetch(url); const d=await r.json();
       return {name:s.name,wind:d.current.wind_speed_10m,dir:d.current.wind_direction_10m,gust:d.current.wind_gusts_10m,time:d.current.time};
     }));
@@ -1710,7 +1711,19 @@ function updateSurfNow() {
 }
 
 // ── INIT ──
-switchRegion('gardenRoute');
+// Auto-detect best region: pick first with future/current days
+function detectBestRegion() {
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  // Check regions in display order
+  for (const key of ['capeTown','basque','gardenRoute']) {
+    const reg = REGIONS[key];
+    const hasFuture = reg.days.some(d => d.date >= todayStr);
+    if (hasFuture) return key;
+  }
+  return 'capeTown'; // fallback
+}
+switchRegion(detectBestRegion());
 </script>
 </body>
 </html>
